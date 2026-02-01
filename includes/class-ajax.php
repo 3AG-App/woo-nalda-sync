@@ -256,7 +256,7 @@ class WNS_Ajax {
 
         // Test by fetching orders with minimal range
         $response = wp_remote_post(
-            'https://api.nalda.com/orders',
+            'https://sellers-api.nalda.com/orders',
             array(
                 'timeout' => 30,
                 'headers' => array(

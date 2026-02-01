@@ -120,7 +120,7 @@ class WNS_Order_Import {
         }
 
         $response = wp_remote_post(
-            'https://api.nalda.com/orders/items',
+            'https://sellers-api.nalda.com/orders/items',
             array(
                 'timeout' => 60,
                 'headers' => array(
