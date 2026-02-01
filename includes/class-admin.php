@@ -85,6 +85,15 @@ class WNS_Admin {
 
         add_submenu_page(
             'wns-dashboard',
+            __( 'Upload History', 'woo-nalda-sync' ),
+            __( 'Upload History', 'woo-nalda-sync' ),
+            'manage_woocommerce',
+            'wns-history',
+            array( $this, 'render_history_page' )
+        );
+
+        add_submenu_page(
+            'wns-dashboard',
             __( 'License', 'woo-nalda-sync' ),
             __( 'License', 'woo-nalda-sync' ),
             'manage_woocommerce',
@@ -418,6 +427,13 @@ class WNS_Admin {
      */
     public function render_license_page() {
         include WNS_PLUGIN_DIR . 'includes/views/license.php';
+    }
+
+    /**
+     * Render history page
+     */
+    public function render_history_page() {
+        include WNS_PLUGIN_DIR . 'includes/views/history.php';
     }
 
     /**

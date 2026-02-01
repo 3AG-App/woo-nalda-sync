@@ -747,7 +747,11 @@
                     $(this).remove();
                 });
             }, 4000);
-        }
+        },
+
+        /**
+         * Upload history state
+         */
     };
 
     // Initialize on document ready

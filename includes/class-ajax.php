@@ -58,6 +58,9 @@ class WNS_Ajax {
 
         // Delivery note PDF download
         add_action( 'wp_ajax_wns_download_delivery_note', array( $this, 'download_delivery_note' ) );
+
+        // Upload history
+        add_action( 'wp_ajax_wns_get_upload_history', array( $this, 'get_upload_history' ) );
     }
 
     /**
@@ -924,5 +927,86 @@ class WNS_Ajax {
 
         // The generate() method exits, so this won't be reached.
         exit;
+    }
+
+    /**
+     * Get upload history from API
+     */
+    public function get_upload_history() {
+        $this->verify_nonce();
+
+        // Check license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
+        }
+
+        $page     = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 1;
+        $per_page = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 15;
+
+        // Get credentials
+        $license_key = get_option( 'wns_license_key', '' );
+        $domain      = wns_get_domain();
+
+        if ( empty( $license_key ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'License key not configured.', 'woo-nalda-sync' ),
+                )
+            );
+        }
+
+        // Build API URL
+        $api_url = add_query_arg(
+            array(
+                'license_key' => $license_key,
+                'domain'      => $domain,
+                'page'        => $page,
+                'per_page'    => $per_page,
+            ),
+            WNS_API_BASE_URL . '/nalda/csv-upload/list'
+        );
+
+        // Make API request
+        $response = wp_remote_get(
+            $api_url,
+            array(
+                'timeout' => 30,
+                'headers' => array(
+                    'Accept' => 'application/json',
+                ),
+            )
+        );
+
+        if ( is_wp_error( $response ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => $response->get_error_message(),
+                )
+            );
+        }
+
+        $status_code = wp_remote_retrieve_response_code( $response );
+        $body        = wp_remote_retrieve_body( $response );
+        $data        = json_decode( $body, true );
+
+        if ( $status_code !== 200 ) {
+            $error_message = isset( $data['message'] ) ? $data['message'] : __( 'Failed to fetch upload history.', 'woo-nalda-sync' );
+            wp_send_json_error(
+                array(
+                    'message' => $error_message,
+                )
+            );
+        }
+
+        wp_send_json_success(
+            array(
+                'uploads'    => isset( $data['data'] ) ? $data['data'] : array(),
+                'pagination' => isset( $data['meta'] ) ? $data['meta'] : array(),
+            )
+        );
     }
 }

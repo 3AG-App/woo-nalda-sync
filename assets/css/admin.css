@@ -1923,3 +1923,169 @@
 .wns-btn-outline-danger:hover {
     background: var(--wns-danger-light);
 }
+
+/* Upload History Table */
+.wns-filename {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--wns-gray-600);
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wns-type-products {
+    background: var(--wns-primary-light);
+    color: var(--wns-primary);
+}
+
+.wns-type-orders {
+    background: var(--wns-success-light);
+    color: var(--wns-success);
+}
+
+/* Text Status Badges for Upload History */
+.wns-status-badge.wns-status-success {
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.wns-status-badge.wns-status-error {
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.wns-status-badge.wns-status-warning {
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Pagination */
+.wns-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--wns-gray-200);
+}
+
+.wns-page-info {
+    font-size: 14px;
+    color: var(--wns-gray-600);
+}
+
+/* Filter Controls */
+.wns-filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wns-filter-label {
+    font-size: 13px;
+    color: var(--wns-gray-600);
+}
+
+.wns-select {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: 1px solid var(--wns-gray-300);
+    border-radius: var(--wns-radius);
+    background: #fff;
+    min-width: 150px;
+}
+
+.wns-select:focus {
+    border-color: var(--wns-primary);
+    outline: none;
+}
+
+/* Legend Grid */
+.wns-legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.wns-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wns-legend-desc {
+    font-size: 13px;
+    color: var(--wns-gray-600);
+}
+
+/* Legend Row Layout */
+.wns-legend-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+}
+
+.wns-legend-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wns-gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wns-legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Upload row styles */
+.wns-upload-row .wns-upload-id {
+    font-family: var(--wns-font-mono);
+    font-size: 13px;
+    color: var(--wns-gray-600);
+}
+
+.wns-upload-row .wns-filename {
+    font-family: var(--wns-font-mono);
+    font-size: 13px;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+/* Column widths for history table */
+.wns-col-id {
+    width: 80px;
+}
+
+.wns-col-filename {
+    min-width: 200px;
+}
+
+/* Muted text */
+.wns-muted {
+    color: var(--wns-gray-500);
+    font-size: 13px;
+}
