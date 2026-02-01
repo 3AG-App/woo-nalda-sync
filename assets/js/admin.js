@@ -153,8 +153,6 @@
                 order_import_range: $('#wns-order-import-range').val(),
                 order_status_export_interval: $('#wns-order-status-export-interval').val(),
                 order_status_export_enabled: $('#wns-order-status-export-enabled').is(':checked'),
-                default_country: $('#wns-default-country').val(),
-                default_currency: $('#wns-default-currency').val(),
                 default_delivery_days: $('#wns-default-delivery-days').val(),
                 default_return_days: $('#wns-default-return-days').val()
             };
