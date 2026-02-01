@@ -193,13 +193,19 @@ class WNS_Ajax {
             WNS_API_BASE_URL . '/nalda/sftp-validate',
             array(
                 'timeout' => 30,
-                'body'    => array(
-                    'license_key'   => $license_key,
-                    'domain'        => $this->get_domain(),
-                    'sftp_host'     => $sftp_host,
-                    'sftp_port'     => (int) $sftp_port,
-                    'sftp_username' => $sftp_username,
-                    'sftp_password' => $sftp_password,
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                    'Accept'       => 'application/json',
+                ),
+                'body'    => wp_json_encode(
+                    array(
+                        'license_key'   => $license_key,
+                        'domain'        => $this->get_domain(),
+                        'sftp_host'     => $sftp_host,
+                        'sftp_port'     => (int) $sftp_port,
+                        'sftp_username' => $sftp_username,
+                        'sftp_password' => $sftp_password,
+                    )
                 ),
             )
         );
