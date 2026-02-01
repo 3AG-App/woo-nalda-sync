@@ -110,6 +110,7 @@ class WNS_Order_Import {
             $stats = array(
                 'total'    => 0,
                 'imported' => 0,
+                'updated'  => 0,
                 'skipped'  => 0,
                 'errors'   => 0,
             );
@@ -192,6 +193,7 @@ class WNS_Order_Import {
      */
     private function import_orders( $nalda_orders ) {
         $imported      = 0;
+        $updated       = 0;
         $skipped       = 0;
         $errors        = 0;
         $error_details = array();
@@ -210,9 +212,17 @@ class WNS_Order_Import {
         }
 
         foreach ( $grouped as $nalda_order_id => $order_data ) {
-            // Check for duplicate
-            if ( $this->order_exists( $nalda_order_id ) ) {
-                $skipped++;
+            // Check for existing order
+            $existing_order = $this->get_existing_order( $nalda_order_id );
+
+            if ( $existing_order ) {
+                // Update existing order's payout status
+                $was_updated = $this->update_existing_order( $existing_order, $order_data );
+                if ( $was_updated ) {
+                    $updated++;
+                } else {
+                    $skipped++;
+                }
                 continue;
             }
 
@@ -245,6 +255,7 @@ class WNS_Order_Import {
         return array(
             'total'         => count( $grouped ),
             'imported'      => $imported,
+            'updated'       => $updated,
             'skipped'       => $skipped,
             'errors'        => $errors,
             'error_details' => $error_details,
@@ -252,43 +263,62 @@ class WNS_Order_Import {
     }
 
     /**
-     * Check if order already exists
+     * Get existing WooCommerce order by Nalda order ID
      *
      * @param int $nalda_order_id Nalda order ID.
-     * @return bool
+     * @return WC_Order|false
      */
-    private function order_exists( $nalda_order_id ) {
-        global $wpdb;
-
-        // Check in postmeta for traditional orders
-        $exists = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_nalda_order_id' AND meta_value = %s LIMIT 1",
-                $nalda_order_id
+    private function get_existing_order( $nalda_order_id ) {
+        $orders = wc_get_orders(
+            array(
+                'meta_key'   => '_nalda_order_id',
+                'meta_value' => $nalda_order_id,
+                'limit'      => 1,
             )
         );
 
-        if ( $exists ) {
-            return true;
-        }
+        return ! empty( $orders ) ? $orders[0] : false;
+    }
 
-        // Check in HPOS orders meta if available
-        if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) && 
-             \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-            $orders = wc_get_orders(
-                array(
-                    'meta_key'   => '_nalda_order_id',
-                    'meta_value' => $nalda_order_id,
-                    'limit'      => 1,
+    /**
+     * Update existing order with latest data from Nalda
+     *
+     * Currently updates: payout status
+     *
+     * @param WC_Order $order      Existing WooCommerce order.
+     * @param array    $order_data Order data from Nalda.
+     * @return bool True if updated, false if no changes.
+     */
+    private function update_existing_order( $order, $order_data ) {
+        $info    = $order_data['info'];
+        $updated = false;
+
+        // Update payout status if changed
+        $current_payout = $order->get_meta( '_nalda_payout_status' );
+        $new_payout     = $info['payoutStatus'] ?? '';
+
+        if ( $current_payout !== $new_payout ) {
+            $order->update_meta_data( '_nalda_payout_status', $new_payout );
+
+            // Add order note about payout status change
+            $order->add_order_note(
+                sprintf(
+                    /* translators: 1: Old status, 2: New status */
+                    __( 'Nalda payout status updated: %1$s → %2$s', 'woo-nalda-sync' ),
+                    $current_payout ?: __( 'None', 'woo-nalda-sync' ),
+                    $new_payout ?: __( 'None', 'woo-nalda-sync' )
                 )
             );
 
-            if ( ! empty( $orders ) ) {
-                return true;
-            }
+            $updated = true;
         }
 
-        return false;
+        if ( $updated ) {
+            $order->update_meta_data( '_nalda_last_sync', current_time( 'mysql' ) );
+            $order->save();
+        }
+
+        return $updated;
     }
 
     /**
@@ -514,9 +544,10 @@ class WNS_Order_Import {
             $status = ( isset( $result['errors'] ) && $result['errors'] > 0 ) ? 'warning' : 'success';
 
             $message = sprintf(
-                /* translators: 1: Imported count, 2: Skipped count */
-                __( 'Imported %1$d orders, skipped %2$d (duplicates).', 'woo-nalda-sync' ),
+                /* translators: 1: Imported count, 2: Updated count, 3: Skipped count */
+                __( 'Imported %1$d orders, updated %2$d, skipped %3$d.', 'woo-nalda-sync' ),
                 $result['imported'],
+                $result['updated'] ?? 0,
                 $result['skipped']
             );
 
