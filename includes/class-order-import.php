@@ -283,7 +283,7 @@ class WNS_Order_Import {
     /**
      * Update existing order with latest data from Nalda
      *
-     * Currently updates: payout status
+     * Currently updates: payout status, payment status
      *
      * @param WC_Order $order      Existing WooCommerce order.
      * @param array    $order_data Order data from Nalda.
@@ -309,6 +309,31 @@ class WNS_Order_Import {
                     $new_payout ?: __( 'None', 'woo-nalda-sync' )
                 )
             );
+
+            // Update payment status based on new payout status
+            $payout_status_lower = strtolower( $new_payout );
+            if ( 'paid_out' === $payout_status_lower && ! $order->is_paid() ) {
+                // Nalda has now paid us - set payment method and mark order as paid
+                $order->set_payment_method( 'nalda' );
+                $order->set_payment_method_title( 'Nalda Marketplace' );
+                $order->set_date_paid( time() );
+                $order->add_order_note(
+                    __( 'Payment received from Nalda Marketplace.', 'woo-nalda-sync' ),
+                    false,
+                    true
+                );
+            } elseif ( 'paid_out' !== $payout_status_lower && $order->is_paid() ) {
+                // Payout status changed from paid to unpaid (rare, but handle it)
+                // Remove payment method and mark as unpaid
+                $order->set_payment_method( '' );
+                $order->set_payment_method_title( '' );
+                $order->set_date_paid( null );
+                $order->add_order_note(
+                    __( 'Payment status reverted - Nalda payout status changed.', 'woo-nalda-sync' ),
+                    false,
+                    true
+                );
+            }
 
             $updated = true;
         }
@@ -446,6 +471,27 @@ class WNS_Order_Import {
         // Set order date
         if ( ! empty( $info['createdAt'] ) ) {
             $order->set_date_created( strtotime( $info['createdAt'] ) );
+        }
+
+        // Set payment method and status based on Nalda payout status.
+        // Only set payment method and mark as paid if Nalda has actually paid us out.
+        $payout_status       = $info['payoutStatus'] ?? '';
+        $payout_status_lower = strtolower( $payout_status );
+
+        if ( 'paid_out' === $payout_status_lower ) {
+            // Nalda has paid us - set payment method and mark order as paid.
+            $order->set_payment_method( 'nalda' );
+            $order->set_payment_method_title( 'Nalda Marketplace' );
+            $order->set_date_paid( time() );
+            $order->add_order_note(
+                __( 'Payment received from Nalda Marketplace.', 'woo-nalda-sync' ),
+                false,
+                true
+            );
+        } else {
+            // Nalda hasn't paid us yet - leave as unpaid with no payment method.
+            // Customer paid Nalda, but we're waiting for payout.
+            $order->set_date_paid( null );
         }
 
         // Calculate totals (this sets the order total correctly)

@@ -6,7 +6,7 @@ Tested up to: 6.7
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 8.5
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,6 +90,12 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 
 == Changelog ==
 
+= 1.0.5 =
+* Added: Orders are marked as paid only when Nalda payout status is "paid_out"
+* Added: Payment method set to "Nalda Marketplace" when payout received
+* Added: Payment status updates when payout status changes during sync
+* Fixed: Orders now correctly show as unpaid until Nalda sends payout
+
 = 1.0.4 =
 * Fixed: "New Order" admin email now shows correct order total instead of 0
 * Fixed: Emails are disabled during order creation, then triggered after totals are calculated
@@ -134,6 +140,9 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 * German translation included
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+Orders are now correctly marked as paid only when Nalda payout status is "paid_out".
 
 = 1.0.4 =
 Fixed "New Order" admin email showing 0 amount. Emails are now sent after order totals are calculated.
