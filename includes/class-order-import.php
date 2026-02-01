@@ -23,15 +23,16 @@ class WNS_Order_Import {
     private $nalda_billing = array(
         'first_name' => 'Nalda',
         'last_name'  => 'Marketplace',
-        'company'    => 'Nalda AG',
-        'address_1'  => 'Bahnhofstrasse 1',
+        'company'    => 'Nalda Marketplace AG',
+        'address_1'  => 'Grabenstrasse 15a',
         'address_2'  => '',
-        'city'       => 'Zürich',
-        'state'      => 'ZH',
-        'postcode'   => '8001',
+        'city'       => 'Baar',
+        'state'      => 'ZG',
+        'postcode'   => '6340',
         'country'    => 'CH',
         'email'      => 'orders@nalda.com',
         'phone'      => '',
+        'vat_number' => 'CHE-353.496.457 MWST',
     );
 
     /**
@@ -389,37 +390,39 @@ class WNS_Order_Import {
         foreach ( $items as $item ) {
             $product = $this->find_product_by_gtin( $item['gtin'] );
 
-            if ( $product ) {
-                $item_price = floatval( $item['price'] );
-                $item_commission = floatval( $item['commission'] ?? 0 );
-                // Price after Nalda commission deduction (per unit)
-                $net_price = $item_price - ( $item_commission / intval( $item['quantity'] ) );
+            $quantity = max( 1, intval( $item['quantity'] ) ); // Prevent division by zero
+            $item_price = floatval( $item['price'] );
+            $item_commission = floatval( $item['commission'] ?? 0 );
+            // Price after Nalda commission deduction (per unit)
+            $commission_per_item = $item_commission / $quantity;
+            $net_price = $item_price - $commission_per_item;
 
-                $order_item_id = $order->add_product( $product, intval( $item['quantity'] ), array(
-                    'subtotal' => $net_price * intval( $item['quantity'] ),
-                    'total'    => $net_price * intval( $item['quantity'] ),
+            if ( $product ) {
+                $order_item_id = $order->add_product( $product, $quantity, array(
+                    'subtotal' => $net_price * $quantity,
+                    'total'    => $net_price * $quantity,
                 ) );
 
                 // Store item metadata
                 if ( $order_item_id ) {
                     wc_add_order_item_meta( $order_item_id, '_nalda_gtin', $item['gtin'] );
+                    wc_add_order_item_meta( $order_item_id, '_nalda_customer_price', $item_price );
                     wc_add_order_item_meta( $order_item_id, '_nalda_original_price', $item['price'] );
-                    wc_add_order_item_meta( $order_item_id, '_nalda_commission', $item['commission'] ?? 0 );
+                    wc_add_order_item_meta( $order_item_id, '_nalda_commission', $item_commission );
+                    wc_add_order_item_meta( $order_item_id, '_nalda_net_price', $net_price );
                 }
             } else {
                 // Add as line item without product link
-                $item_price = floatval( $item['price'] );
-                $item_commission = floatval( $item['commission'] ?? 0 );
-                $net_price = $item_price - ( $item_commission / intval( $item['quantity'] ) );
-
                 $order_item = new WC_Order_Item_Product();
                 $order_item->set_name( $item['title'] ?? __( 'Unknown Product', 'woo-nalda-sync' ) );
-                $order_item->set_quantity( intval( $item['quantity'] ) );
-                $order_item->set_subtotal( $net_price * intval( $item['quantity'] ) );
-                $order_item->set_total( $net_price * intval( $item['quantity'] ) );
+                $order_item->set_quantity( $quantity );
+                $order_item->set_subtotal( $net_price * $quantity );
+                $order_item->set_total( $net_price * $quantity );
                 $order_item->add_meta_data( '_nalda_gtin', $item['gtin'] );
+                $order_item->add_meta_data( '_nalda_customer_price', $item_price );
                 $order_item->add_meta_data( '_nalda_original_price', $item['price'] );
-                $order_item->add_meta_data( '_nalda_commission', $item['commission'] ?? 0 );
+                $order_item->add_meta_data( '_nalda_commission', $item_commission );
+                $order_item->add_meta_data( '_nalda_net_price', $net_price );
                 $order->add_item( $order_item );
             }
         }
@@ -437,6 +440,9 @@ class WNS_Order_Import {
         $order->set_billing_email( $this->nalda_billing['email'] );
         $order->set_billing_phone( $this->nalda_billing['phone'] );
 
+        // Add VAT number to billing
+        $order->update_meta_data( '_billing_vat_number', $this->nalda_billing['vat_number'] );
+
         // Set shipping address (customer from Nalda)
         $order->set_shipping_first_name( $info['firstName'] ?? '' );
         $order->set_shipping_last_name( $info['lastName'] ?? '' );
@@ -444,6 +450,11 @@ class WNS_Order_Import {
         $order->set_shipping_city( $info['city'] ?? '' );
         $order->set_shipping_postcode( $info['postalCode'] ?? '' );
         $order->set_shipping_country( $info['country'] ?? 'CH' );
+
+        // Set order currency from API response
+        if ( ! empty( $info['currency'] ) ) {
+            $order->set_currency( $info['currency'] );
+        }
 
         // Set order meta
         $order->update_meta_data( '_nalda_order_id', $nalda_order_id );
@@ -513,8 +524,6 @@ class WNS_Order_Import {
 
         // Now update status to appropriate WooCommerce status based on Nalda delivery status.
         // This is done AFTER save so the totals are already in the database.
-        $delivery_status = $info['deliveryStatus'] ?? 'IN_PREPARATION';
-        $order->update_meta_data( '_nalda_state', $delivery_status );
         $wc_status = $this->map_nalda_status_to_wc( $delivery_status );
         $order->set_status( $wc_status, __( 'Order imported from Nalda Marketplace.', 'woo-nalda-sync' ) );
         $order->save();
@@ -525,9 +534,10 @@ class WNS_Order_Import {
         remove_filter( 'woocommerce_email_enabled_customer_on_hold_order', '__return_false' );
 
         // Manually trigger the new order email now that totals are correct.
+        // Only trigger if order status is processing (most common case).
         // Reload the order from database to ensure we have fresh data.
         $order = wc_get_order( $order->get_id() );
-        if ( $order ) {
+        if ( $order && 'processing' === $wc_status ) {
             do_action( 'woocommerce_order_status_pending_to_processing_notification', $order->get_id(), $order );
         }
 

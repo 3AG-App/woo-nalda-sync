@@ -6,7 +6,7 @@ Tested up to: 6.7
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 8.5
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,6 +89,15 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 6. Detailed sync logs
 
 == Changelog ==
+
+= 1.0.6 =
+* Fixed: Nalda billing address corrected (Grabenstrasse 15a, 6340 Baar)
+* Fixed: Division by zero when item quantity is 0
+* Fixed: Duplicate _nalda_state meta assignment removed
+* Fixed: Email notification only triggered for processing orders
+* Added: VAT number stored in order billing meta (_billing_vat_number)
+* Added: Order currency set from API response
+* Added: _nalda_customer_price and _nalda_net_price stored per item
 
 = 1.0.5 =
 * Added: Orders are marked as paid only when Nalda payout status is "paid_out"
