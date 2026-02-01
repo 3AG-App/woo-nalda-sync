@@ -254,14 +254,15 @@ class WNS_Ajax {
             );
         }
 
-        // Test by fetching orders with minimal range
+        // Use /orders endpoint to validate API key (requires authentication)
         $response = wp_remote_post(
             'https://sellers-api.nalda.com/orders',
             array(
-                'timeout' => 30,
+                'timeout' => 15,
                 'headers' => array(
                     'X-API-KEY'    => $api_key,
                     'Content-Type' => 'application/json',
+                    'Accept'       => 'application/json',
                 ),
                 'body'    => wp_json_encode(
                     array(
@@ -274,14 +275,20 @@ class WNS_Ajax {
         if ( is_wp_error( $response ) ) {
             wp_send_json_error(
                 array(
-                    'message' => $response->get_error_message(),
+                    'message' => sprintf(
+                        /* translators: %s: Error message */
+                        __( 'Connection failed: %s', 'woo-nalda-sync' ),
+                        $response->get_error_message()
+                    ),
                 )
             );
         }
 
         $code = wp_remote_retrieve_response_code( $response );
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        if ( 200 === $code || 204 === $code ) {
+        // 200 with success=true means valid API key (with or without orders)
+        if ( 200 === $code && isset( $body['success'] ) && $body['success'] ) {
             wp_send_json_success(
                 array(
                     'message' => __( 'Nalda API connection successful!', 'woo-nalda-sync' ),
@@ -293,10 +300,18 @@ class WNS_Ajax {
                     'message' => __( 'Invalid API key.', 'woo-nalda-sync' ),
                 )
             );
+        } elseif ( 404 === $code && isset( $body['success'] ) ) {
+            // 404 with a proper response structure means API key is valid, just no orders found
+            wp_send_json_success(
+                array(
+                    'message' => __( 'Nalda API connection successful! (No orders found)', 'woo-nalda-sync' ),
+                )
+            );
         } else {
+            $error_message = isset( $body['message'] ) ? $body['message'] : __( 'Validation failed.', 'woo-nalda-sync' );
             wp_send_json_error(
                 array(
-                    'message' => __( 'Nalda API connection failed.', 'woo-nalda-sync' ),
+                    'message' => $error_message,
                 )
             );
         }
