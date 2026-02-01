@@ -154,7 +154,8 @@
                 order_status_export_interval: $('#wns-order-status-export-interval').val(),
                 order_status_export_enabled: $('#wns-order-status-export-enabled').is(':checked'),
                 default_delivery_days: $('#wns-default-delivery-days').val(),
-                default_return_days: $('#wns-default-return-days').val()
+                default_return_days: $('#wns-default-return-days').val(),
+                delivery_note_logo_id: $('#wns-delivery-note-logo-id').val()
             };
 
             this.ajax('wns_save_settings', data)
@@ -752,6 +753,49 @@
     // Initialize on document ready
     $(document).ready(function () {
         WNS.init();
+
+        // Media uploader for delivery note logo
+        let mediaUploader;
+
+        $('#wns-delivery-note-logo-upload').on('click', function (e) {
+            e.preventDefault();
+
+            // If the uploader object has already been created, reopen the dialog
+            if (mediaUploader) {
+                mediaUploader.open();
+                return;
+            }
+
+            // Create the media uploader
+            mediaUploader = wp.media({
+                title: wns_admin.strings?.select_image || 'Select Logo',
+                button: {
+                    text: wns_admin.strings?.use_image || 'Use this image'
+                },
+                multiple: false
+            });
+
+            // When an image is selected, update the preview
+            mediaUploader.on('select', function () {
+                const attachment = mediaUploader.state().get('selection').first().toJSON();
+                const imageUrl = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
+
+                $('#wns-delivery-note-logo-id').val(attachment.id);
+                $('#wns-delivery-note-logo-preview').html('<img src="' + imageUrl + '" alt="">').show();
+                $('#wns-delivery-note-logo-remove').show();
+            });
+
+            // Open the uploader dialog
+            mediaUploader.open();
+        });
+
+        // Remove logo
+        $('#wns-delivery-note-logo-remove').on('click', function (e) {
+            e.preventDefault();
+            $('#wns-delivery-note-logo-id').val('');
+            $('#wns-delivery-note-logo-preview').html('').hide();
+            $(this).hide();
+        });
     });
 
 })(jQuery);

@@ -33,6 +33,8 @@ $default_country       = WC()->countries->get_base_country();
 $default_currency      = get_woocommerce_currency();
 $default_delivery_days = get_option( 'wns_default_delivery_days', 3 );
 $default_return_days   = get_option( 'wns_default_return_days', 14 );
+$delivery_note_logo_id = get_option( 'wns_delivery_note_logo_id', 0 );
+$delivery_note_logo_url = $delivery_note_logo_id ? wp_get_attachment_image_url( $delivery_note_logo_id, 'medium' ) : '';
 ?>
 
 <div class="wns-wrap">
@@ -401,6 +403,44 @@ $default_return_days   = get_option( 'wns_default_return_days', 14 );
                                class="wns-input"
                                min="0"
                                <?php disabled( ! $license_valid ); ?>>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery Note Settings -->
+        <div class="wns-section wns-card">
+            <div class="wns-card-header">
+                <h2>
+                    <span class="dashicons dashicons-media-document"></span>
+                    <?php esc_html_e( 'Delivery Note Settings', 'woo-nalda-sync' ); ?>
+                </h2>
+            </div>
+            <div class="wns-card-body">
+                <div class="wns-form-row">
+                    <label class="wns-label">
+                        <?php esc_html_e( 'Delivery Note Logo', 'woo-nalda-sync' ); ?>
+                    </label>
+                    <div class="wns-image-upload-wrapper">
+                        <input type="hidden" name="delivery_note_logo_id" id="wns-delivery-note-logo-id" value="<?php echo esc_attr( $delivery_note_logo_id ); ?>">
+                        <div class="wns-image-preview" id="wns-delivery-note-logo-preview" style="<?php echo $delivery_note_logo_url ? '' : 'display:none;'; ?>">
+                            <?php if ( $delivery_note_logo_url ) : ?>
+                                <img src="<?php echo esc_url( $delivery_note_logo_url ); ?>" alt="">
+                            <?php endif; ?>
+                        </div>
+                        <div class="wns-image-buttons">
+                            <button type="button" class="wns-btn wns-btn-secondary wns-btn-sm" id="wns-delivery-note-logo-upload" <?php disabled( ! $license_valid ); ?>>
+                                <span class="dashicons dashicons-upload"></span>
+                                <?php esc_html_e( 'Upload Logo', 'woo-nalda-sync' ); ?>
+                            </button>
+                            <button type="button" class="wns-btn wns-btn-outline-danger wns-btn-sm" id="wns-delivery-note-logo-remove" style="<?php echo $delivery_note_logo_url ? '' : 'display:none;'; ?>" <?php disabled( ! $license_valid ); ?>>
+                                <span class="dashicons dashicons-trash"></span>
+                                <?php esc_html_e( 'Remove', 'woo-nalda-sync' ); ?>
+                            </button>
+                        </div>
+                        <p class="wns-help-text">
+                            <?php esc_html_e( 'Custom logo to display on delivery note PDFs. Recommended size: 200x60px.', 'woo-nalda-sync' ); ?>
+                        </p>
                     </div>
                 </div>
             </div>

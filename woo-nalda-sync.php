@@ -321,5 +321,31 @@ function WNS() {
     return Woo_Nalda_Sync::instance();
 }
 
+/**
+ * Get plugin settings
+ *
+ * @return array All plugin settings
+ */
+function wns_get_settings() {
+    return array(
+        'sftp_host'                    => get_option( 'wns_sftp_host', '' ),
+        'sftp_port'                    => get_option( 'wns_sftp_port', '2022' ),
+        'sftp_username'                => get_option( 'wns_sftp_username', '' ),
+        'sftp_password'                => get_option( 'wns_sftp_password', '' ),
+        'nalda_api_key'                => get_option( 'wns_nalda_api_key', '' ),
+        'product_export_enabled'       => get_option( 'wns_product_export_enabled', false ),
+        'product_export_interval'      => get_option( 'wns_product_export_interval', 'daily' ),
+        'product_default_behavior'     => get_option( 'wns_product_default_behavior', 'include' ),
+        'order_import_enabled'         => get_option( 'wns_order_import_enabled', false ),
+        'order_import_interval'        => get_option( 'wns_order_import_interval', 'hourly' ),
+        'order_import_range'           => get_option( 'wns_order_import_range', 'today' ),
+        'order_status_export_enabled'  => get_option( 'wns_order_status_export_enabled', false ),
+        'order_status_export_interval' => get_option( 'wns_order_status_export_interval', 'hourly' ),
+        'default_delivery_days'        => get_option( 'wns_default_delivery_days', '5' ),
+        'default_return_days'          => get_option( 'wns_default_return_days', '14' ),
+        'delivery_note_logo_id'        => get_option( 'wns_delivery_note_logo_id', 0 ),
+    );
+}
+
 // Initialize the plugin
 WNS();

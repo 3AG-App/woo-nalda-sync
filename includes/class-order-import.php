@@ -386,8 +386,23 @@ class WNS_Order_Import {
         $order->update_meta_data( '_nalda_payout_status', $info['payoutStatus'] ?? '' );
         $order->update_meta_data( '_nalda_created_at', $info['createdAt'] ?? '' );
 
+        // Store delivery state for order status export
+        $delivery_status = $info['deliveryStatus'] ?? 'IN_PREPARATION';
+        $order->update_meta_data( '_nalda_state', $delivery_status );
+
+        // Store expected delivery date if available
+        if ( ! empty( $info['deliveryDatePlanned'] ) ) {
+            $delivery_date_formatted = date( 'Y-m-d', strtotime( $info['deliveryDatePlanned'] ) );
+            if ( $delivery_date_formatted && '1970-01-01' !== $delivery_date_formatted ) {
+                $order->update_meta_data( '_nalda_expected_delivery_date', $delivery_date_formatted );
+            }
+        }
+
+        // Store end customer email
+        $order->update_meta_data( '_nalda_end_customer_email', $info['email'] ?? '' );
+
         // Set status based on Nalda delivery status
-        $status = $this->map_nalda_status_to_wc( $info['deliveryStatus'] ?? 'IN_PREPARATION' );
+        $status = $this->map_nalda_status_to_wc( $delivery_status );
         $order->set_status( $status );
 
         // Set order date

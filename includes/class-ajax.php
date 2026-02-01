@@ -55,6 +55,9 @@ class WNS_Ajax {
 
         // Product column AJAX
         add_action( 'wp_ajax_wns_toggle_product_nalda', array( $this, 'toggle_product_nalda' ) );
+
+        // Delivery note PDF download
+        add_action( 'wp_ajax_wns_download_delivery_note', array( $this, 'download_delivery_note' ) );
     }
 
     /**
@@ -144,6 +147,11 @@ class WNS_Ajax {
         }
         if ( isset( $_POST['default_return_days'] ) ) {
             update_option( 'wns_default_return_days', absint( wp_unslash( $_POST['default_return_days'] ) ) );
+        }
+
+        // Delivery note logo
+        if ( isset( $_POST['delivery_note_logo_id'] ) ) {
+            update_option( 'wns_delivery_note_logo_id', absint( wp_unslash( $_POST['delivery_note_logo_id'] ) ) );
         }
 
         // Reschedule crons if intervals changed
@@ -873,5 +881,48 @@ class WNS_Ajax {
                 'message' => __( 'Product updated.', 'woo-nalda-sync' ),
             )
         );
+    }
+
+    /**
+     * Download delivery note PDF
+     */
+    public function download_delivery_note() {
+        // Get order ID from request.
+        $order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
+        
+        // Get language from request.
+        $language = isset( $_GET['lang'] ) ? sanitize_text_field( wp_unslash( $_GET['lang'] ) ) : '';
+
+        if ( ! $order_id ) {
+            wp_die( __( 'Invalid order ID.', 'woo-nalda-sync' ) );
+        }
+
+        // Verify nonce.
+        if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['nonce'] ) ), 'wns_delivery_note_' . $order_id ) ) {
+            wp_die( __( 'Security check failed.', 'woo-nalda-sync' ) );
+        }
+
+        // Check capability.
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_die( __( 'You do not have permission to access this page.', 'woo-nalda-sync' ) );
+        }
+
+        // Get order.
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_die( __( 'Order not found.', 'woo-nalda-sync' ) );
+        }
+
+        // Load the PDF generator class if not already loaded.
+        if ( ! class_exists( 'WNS_Delivery_Note_PDF' ) ) {
+            require_once WNS_PLUGIN_DIR . 'includes/class-delivery-note-pdf.php';
+        }
+
+        // Generate and output PDF with language parameter.
+        $pdf_generator = new WNS_Delivery_Note_PDF( $order, $language );
+        $pdf_generator->generate();
+
+        // The generate() method exits, so this won't be reached.
+        exit;
     }
 }
