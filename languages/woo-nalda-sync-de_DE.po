@@ -1,0 +1,965 @@
+# German translation for WooCommerce Nalda Marketplace Sync
+# Copyright (C) 2024 3AG Systems
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce Nalda Marketplace Sync 1.0.6\n"
+"Report-Msgid-Bugs-To: https://3ag.app/support\n"
+"POT-Creation-Date: 2024-01-01 00:00:00+00:00\n"
+"PO-Revision-Date: 2024-01-01 00:00:00+00:00\n"
+"Last-Translator: 3AG Systems <support@3ag.de>\n"
+"Language-Team: German <support@3ag.de>\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.4\n"
+
+#: woo-nalda-sync.php
+msgid "WooCommerce Nalda Sync requires WooCommerce to be installed and activated."
+msgstr "WooCommerce Nalda Sync erfordert, dass WooCommerce installiert und aktiviert ist."
+
+#: includes/class-admin.php includes/views/dashboard.php
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: includes/class-admin.php includes/views/settings.php
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: includes/class-admin.php includes/views/license.php
+msgid "License"
+msgstr "Lizenz"
+
+#: includes/views/license.php
+msgid "Manage your plugin license activation"
+msgstr "Plugin-Lizenzaktivierung verwalten"
+
+#: includes/views/license.php
+msgid "License Active"
+msgstr "Lizenz aktiv"
+
+#: includes/views/license.php
+msgid "License Not Active"
+msgstr "Lizenz nicht aktiv"
+
+#: includes/views/license.php
+msgid "Enter your license key to activate premium features."
+msgstr "Geben Sie Ihren Lizenzschlüssel ein, um Premium-Funktionen zu aktivieren."
+
+#: includes/views/license.php
+msgid "Expires"
+msgstr "Läuft ab"
+
+#: includes/views/license.php
+msgid "%d days left"
+msgstr "%d Tage übrig"
+
+#: includes/views/license.php
+msgid "Expired"
+msgstr "Abgelaufen"
+
+#: includes/views/license.php
+msgid "Lifetime"
+msgstr "Lebenslang"
+
+#: includes/views/license.php
+msgid "Activations"
+msgstr "Aktivierungen"
+
+#: includes/views/license.php
+msgid "%1$d of %2$d used"
+msgstr "%1$d von %2$d verwendet"
+
+#: includes/views/license.php
+msgid "Last Verified"
+msgstr "Zuletzt überprüft"
+
+#: includes/views/license.php
+msgid "ago"
+msgstr "vor"
+
+#: includes/views/license.php
+msgid "License Management"
+msgstr "Lizenzverwaltung"
+
+#: includes/views/license.php
+msgid "Activate License"
+msgstr "Lizenz aktivieren"
+
+#: includes/views/license.php
+msgid "Current License Key"
+msgstr "Aktueller Lizenzschlüssel"
+
+#: includes/views/license.php
+msgid "Verify License"
+msgstr "Lizenz überprüfen"
+
+#: includes/views/license.php
+msgid "Deactivate License"
+msgstr "Lizenz deaktivieren"
+
+#: includes/views/license.php
+msgid "License Key"
+msgstr "Lizenzschlüssel"
+
+#: includes/views/license.php
+msgid "Activate"
+msgstr "Aktivieren"
+
+#: includes/views/license.php
+msgid "Enter the license key you received after purchase."
+msgstr "Geben Sie den Lizenzschlüssel ein, den Sie nach dem Kauf erhalten haben."
+
+#: includes/views/settings.php
+msgid "Configure your Nalda marketplace synchronization settings"
+msgstr "Konfigurieren Sie Ihre Nalda-Marktplatz-Synchronisierungseinstellungen"
+
+#: includes/views/settings.php
+msgid "SFTP Configuration"
+msgstr "SFTP-Konfiguration"
+
+#: includes/views/settings.php
+msgid "SFTP credentials provided by Nalda for uploading CSV files."
+msgstr "SFTP-Zugangsdaten von Nalda für den Upload von CSV-Dateien."
+
+#: includes/views/settings.php
+msgid "SFTP Host"
+msgstr "SFTP-Host"
+
+#: includes/views/settings.php
+msgid "SFTP Port"
+msgstr "SFTP-Port"
+
+#: includes/views/settings.php
+msgid "SFTP Username"
+msgstr "SFTP-Benutzername"
+
+#: includes/views/settings.php
+msgid "SFTP Password"
+msgstr "SFTP-Passwort"
+
+#: includes/views/settings.php
+msgid "Test Connection"
+msgstr "Verbindung testen"
+
+#: includes/views/settings.php
+msgid "Test SFTP Connection"
+msgstr "SFTP-Verbindung testen"
+
+#: includes/views/settings.php
+msgid "API Configuration"
+msgstr "API-Konfiguration"
+
+#: includes/views/settings.php
+msgid "Your API key from the Nalda marketplace seller dashboard."
+msgstr "Ihr API-Schlüssel aus dem Nalda-Marktplatz-Verkäufer-Dashboard."
+
+#: includes/views/settings.php
+msgid "Nalda API Key"
+msgstr "Nalda API-Schlüssel"
+
+#: includes/views/settings.php
+msgid "Product Export"
+msgstr "Produktexport"
+
+#: includes/views/settings.php
+msgid "Enable Automatic Export"
+msgstr "Automatischen Export aktivieren"
+
+#: includes/views/settings.php
+msgid "Enable scheduled product export to Nalda"
+msgstr "Geplanten Produktexport zu Nalda aktivieren"
+
+#: includes/views/settings.php
+msgid "Export Interval"
+msgstr "Export-Intervall"
+
+#: includes/views/settings.php
+msgid "Default Product Behavior"
+msgstr "Standard-Produktverhalten"
+
+#: includes/views/settings.php
+msgid "Include all products"
+msgstr "Alle Produkte einschließen"
+
+#: includes/views/settings.php
+msgid "Exclude all products"
+msgstr "Alle Produkte ausschließen"
+
+#: includes/views/settings.php
+msgid "Default Delivery Days"
+msgstr "Standard-Liefertage"
+
+#: includes/views/settings.php
+msgid "Default Return Days"
+msgstr "Standard-Rückgabetage"
+
+#: includes/views/settings.php
+msgid "Order Import"
+msgstr "Bestellungsimport"
+
+#: includes/views/settings.php
+msgid "Enable Automatic Import"
+msgstr "Automatischen Import aktivieren"
+
+#: includes/views/settings.php
+msgid "Enable scheduled order import from Nalda"
+msgstr "Geplanten Bestellungsimport von Nalda aktivieren"
+
+#: includes/views/settings.php
+msgid "Import Interval"
+msgstr "Import-Intervall"
+
+#: includes/views/settings.php
+msgid "Import Range"
+msgstr "Import-Zeitraum"
+
+#: includes/views/settings.php
+msgid "Date range to fetch orders from Nalda."
+msgstr "Zeitraum zum Abrufen von Bestellungen von Nalda."
+
+#: includes/views/settings.php
+msgid "Today"
+msgstr "Heute"
+
+#: includes/views/settings.php
+msgid "Yesterday"
+msgstr "Gestern"
+
+#: includes/views/settings.php
+msgid "Current Week"
+msgstr "Aktuelle Woche"
+
+#: includes/views/settings.php
+msgid "Current Month"
+msgstr "Aktueller Monat"
+
+#: includes/views/settings.php
+msgid "Current Year"
+msgstr "Aktuelles Jahr"
+
+#: includes/views/settings.php
+msgid "Order Status Export"
+msgstr "Bestellstatus-Export"
+
+#: includes/views/settings.php
+msgid "Status Export"
+msgstr "Status-Export"
+
+#: includes/views/settings.php
+msgid "Automatic order status synchronization"
+msgstr "Automatische Bestellstatus-Synchronisierung"
+
+#: includes/views/settings.php
+msgid "Automatic product export to Nalda marketplace"
+msgstr "Automatischer Produktexport zum Nalda-Marktplatz"
+
+#: includes/views/settings.php
+msgid "Delivery Note Settings"
+msgstr "Lieferschein-Einstellungen"
+
+#: includes/views/settings.php
+msgid "Delivery Note Logo"
+msgstr "Lieferschein-Logo"
+
+#: includes/views/settings.php
+msgid "Custom logo to display on delivery note PDFs. Recommended size: 200x60px."
+msgstr "Eigenes Logo für Lieferschein-PDFs. Empfohlene Größe: 200x60px."
+
+#: includes/views/settings.php
+msgid "Upload Logo"
+msgstr "Logo hochladen"
+
+#: includes/views/settings.php
+msgid "Select Logo"
+msgstr "Logo auswählen"
+
+#: includes/views/settings.php
+msgid "Use this image"
+msgstr "Dieses Bild verwenden"
+
+#: includes/views/settings.php
+msgid "Remove"
+msgstr "Entfernen"
+
+#: includes/views/settings.php
+msgid "Save Settings"
+msgstr "Einstellungen speichern"
+
+#: includes/views/settings.php
+msgid "Watchdog Protection"
+msgstr "Watchdog-Schutz"
+
+#: includes/views/settings.php
+msgid "A watchdog cron runs every hour to ensure all sync schedules are working properly."
+msgstr "Ein Watchdog-Cron läuft stündlich, um sicherzustellen, dass alle Synchronisierungspläne ordnungsgemäß funktionieren."
+
+#: includes/views/settings.php
+msgid "Plugin Updates"
+msgstr "Plugin-Updates"
+
+#: includes/views/settings.php
+msgid "Check for Updates"
+msgstr "Nach Updates suchen"
+
+#: includes/views/settings.php
+msgid "Updates are fetched from %s"
+msgstr "Updates werden von %s abgerufen"
+
+#: includes/views/settings.php
+msgid "Update Available"
+msgstr "Update verfügbar"
+
+#: includes/views/settings.php
+msgid "Update available! Version %s is ready to install."
+msgstr "Update verfügbar! Version %s ist bereit zur Installation."
+
+#: includes/views/settings.php
+msgid "You are running the latest version."
+msgstr "Sie verwenden die neueste Version."
+
+#: includes/views/settings.php
+msgid "Update to %s"
+msgstr "Auf %s aktualisieren"
+
+#: includes/views/dashboard.php
+msgid "Sync Operations"
+msgstr "Sync-Operationen"
+
+#: includes/views/dashboard.php
+msgid "Run Now"
+msgstr "Jetzt ausführen"
+
+#: includes/views/dashboard.php
+msgid "Schedule:"
+msgstr "Zeitplan:"
+
+#: includes/views/dashboard.php
+msgid "Next Run"
+msgstr "Nächste Ausführung"
+
+#: includes/views/dashboard.php
+msgid "Last Run"
+msgstr "Letzte Ausführung"
+
+#: includes/views/dashboard.php
+msgid "Never"
+msgstr "Nie"
+
+#: includes/views/dashboard.php
+msgid "Not scheduled"
+msgstr "Nicht geplant"
+
+#: includes/views/dashboard.php
+msgid "In progress"
+msgstr "In Bearbeitung"
+
+#: includes/views/dashboard.php
+msgid "Recent Activity"
+msgstr "Letzte Aktivität"
+
+#: includes/views/dashboard.php
+msgid "View All"
+msgstr "Alle anzeigen"
+
+#: includes/views/dashboard.php
+msgid "No recent activity"
+msgstr "Keine aktuelle Aktivität"
+
+#: includes/views/dashboard.php
+msgid "Upload History"
+msgstr "Upload-Verlauf"
+
+#: includes/views/dashboard.php
+msgid "View all CSV files uploaded to the Nalda SFTP server"
+msgstr "Alle zum Nalda SFTP-Server hochgeladenen CSV-Dateien anzeigen"
+
+#: includes/views/dashboard.php
+msgid "Refresh"
+msgstr "Aktualisieren"
+
+#: includes/views/dashboard.php
+msgid "Run a product export or order status export to see your upload history."
+msgstr "Führen Sie einen Produktexport oder Bestellstatus-Export durch, um Ihren Upload-Verlauf zu sehen."
+
+#: includes/views/dashboard.php
+msgid "CSV Upload History"
+msgstr "CSV-Upload-Verlauf"
+
+#: includes/views/dashboard.php
+msgid "Upload Types"
+msgstr "Upload-Typen"
+
+#: includes/views/dashboard.php
+msgid "Upload Status"
+msgstr "Upload-Status"
+
+#: includes/views/dashboard.php
+msgid "All Types"
+msgstr "Alle Typen"
+
+#: includes/views/dashboard.php
+msgid "Products"
+msgstr "Produkte"
+
+#: includes/views/dashboard.php
+msgid "Order Status"
+msgstr "Bestellstatus"
+
+#: includes/views/dashboard.php
+msgid "All Statuses"
+msgstr "Alle Status"
+
+#: includes/views/dashboard.php
+msgid "Uploaded"
+msgstr "Hochgeladen"
+
+#: includes/views/dashboard.php
+msgid "Upload failed"
+msgstr "Upload fehlgeschlagen"
+
+#: includes/views/dashboard.php
+msgid "Upload in progress"
+msgstr "Upload läuft"
+
+#: includes/views/dashboard.php
+msgid "File Name"
+msgstr "Dateiname"
+
+#: includes/views/dashboard.php
+msgid "Type"
+msgstr "Typ"
+
+#: includes/views/dashboard.php
+msgid "Status"
+msgstr "Status"
+
+#: includes/views/dashboard.php
+msgid "Date"
+msgstr "Datum"
+
+#: includes/views/dashboard.php
+msgid "Stats"
+msgstr "Statistiken"
+
+#: includes/views/dashboard.php
+msgid "Showing %1$d-%2$d of %3$d uploads"
+msgstr "Zeige %1$d-%2$d von %3$d Uploads"
+
+#: includes/views/logs.php
+msgid "Sync Logs"
+msgstr "Sync-Protokolle"
+
+#: includes/views/logs.php
+msgid "View history of all sync operations"
+msgstr "Verlauf aller Sync-Operationen anzeigen"
+
+#: includes/views/logs.php
+msgid "Detailed sync logs and history"
+msgstr "Detaillierte Sync-Protokolle und Verlauf"
+
+#: includes/views/logs.php
+msgid "Clear Logs"
+msgstr "Protokolle löschen"
+
+#: includes/views/logs.php
+msgid "Filter"
+msgstr "Filter"
+
+#: includes/views/logs.php
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: includes/views/logs.php
+msgid "Trigger"
+msgstr "Auslöser"
+
+#: includes/views/logs.php
+msgid "Duration"
+msgstr "Dauer"
+
+#: includes/views/logs.php
+msgid "Actions"
+msgstr "Aktionen"
+
+#: includes/views/logs.php
+msgid "View Details"
+msgstr "Details anzeigen"
+
+#: includes/views/logs.php
+msgid "Showing %1$d-%2$d of %3$d logs"
+msgstr "Zeige %1$d-%2$d von %3$d Protokollen"
+
+#: includes/views/logs.php
+msgid "No logs found"
+msgstr "Keine Protokolle gefunden"
+
+#: includes/views/logs.php
+msgid "← Previous"
+msgstr "← Zurück"
+
+#: includes/views/logs.php
+msgid "Next →"
+msgstr "Weiter →"
+
+#: includes/class-ajax.php
+msgid "Security check failed."
+msgstr "Sicherheitsprüfung fehlgeschlagen."
+
+#: includes/class-ajax.php
+msgid "You do not have permission to access this page."
+msgstr "Sie haben keine Berechtigung, auf diese Seite zuzugreifen."
+
+#: includes/class-ajax.php
+msgid "Settings saved successfully."
+msgstr "Einstellungen erfolgreich gespeichert."
+
+#: includes/class-ajax.php
+msgid "SFTP credentials are required."
+msgstr "SFTP-Zugangsdaten sind erforderlich."
+
+#: includes/class-ajax.php
+msgid "Connection successful!"
+msgstr "Verbindung erfolgreich!"
+
+#: includes/class-ajax.php
+msgid "Connection failed: %s"
+msgstr "Verbindung fehlgeschlagen: %s"
+
+#: includes/class-ajax.php
+msgid "SFTP connection successful!"
+msgstr "SFTP-Verbindung erfolgreich!"
+
+#: includes/class-ajax.php
+msgid "SFTP connection failed."
+msgstr "SFTP-Verbindung fehlgeschlagen."
+
+#: includes/class-product-export.php
+msgid "Successfully exported %d products."
+msgstr "%d Produkte erfolgreich exportiert."
+
+#: includes/class-product-export.php
+msgid "Exported %1$d products, skipped %2$d."
+msgstr "%1$d Produkte exportiert, %2$d übersprungen."
+
+#: includes/class-order-import.php
+msgid "Successfully imported %d orders."
+msgstr "%d Bestellungen erfolgreich importiert."
+
+#: includes/class-order-import.php
+msgid "Failed to fetch orders from Nalda."
+msgstr "Bestellungen konnten nicht von Nalda abgerufen werden."
+
+#: includes/class-order-status-export.php
+msgid "Successfully exported %d order statuses."
+msgstr "%d Bestellstatus erfolgreich exportiert."
+
+#: includes/class-order-status-export.php
+msgid "Exported %1$d order statuses, skipped %2$d."
+msgstr "%1$d Bestellstatus exportiert, %2$d übersprungen."
+
+#: includes/class-scheduler.php
+msgid "Every 5 Minutes"
+msgstr "Alle 5 Minuten"
+
+#: includes/class-scheduler.php
+msgid "Every 15 Minutes"
+msgstr "Alle 15 Minuten"
+
+#: includes/class-scheduler.php
+msgid "Every 30 Minutes"
+msgstr "Alle 30 Minuten"
+
+#: includes/class-scheduler.php
+msgid "Hourly"
+msgstr "Stündlich"
+
+#: includes/class-scheduler.php
+msgid "Every 2 Hours"
+msgstr "Alle 2 Stunden"
+
+#: includes/class-scheduler.php
+msgid "Every 4 Hours"
+msgstr "Alle 4 Stunden"
+
+#: includes/class-scheduler.php
+msgid "Every 6 Hours"
+msgstr "Alle 6 Stunden"
+
+#: includes/class-scheduler.php
+msgid "Every 12 Hours"
+msgstr "Alle 12 Stunden"
+
+#: includes/class-scheduler.php
+msgid "Daily"
+msgstr "Täglich"
+
+#: includes/class-scheduler.php
+msgid "Every 2 Days"
+msgstr "Alle 2 Tage"
+
+#: includes/class-scheduler.php
+msgid "Weekly"
+msgstr "Wöchentlich"
+
+#: includes/class-admin.php
+msgid "Nalda Order"
+msgstr "Nalda-Bestellung"
+
+#: includes/class-admin.php
+msgid "This order was not imported from Nalda."
+msgstr "Diese Bestellung wurde nicht von Nalda importiert."
+
+#: includes/class-admin.php
+msgid "Delivery Information"
+msgstr "Lieferinformationen"
+
+#: includes/class-admin.php
+msgid "State"
+msgstr "Status"
+
+#: includes/class-admin.php
+msgid "— Select State —"
+msgstr "— Status auswählen —"
+
+#: includes/class-admin.php
+msgid "New"
+msgstr "Neu"
+
+#: includes/class-admin.php
+msgid "Pending"
+msgstr "Ausstehend"
+
+#: includes/class-admin.php
+msgid "Ready to Collect"
+msgstr "Abholbereit"
+
+#: includes/class-admin.php
+msgid "Shipped"
+msgstr "Versendet"
+
+#: includes/class-admin.php
+msgid "Delivered"
+msgstr "Zugestellt"
+
+#: includes/class-admin.php
+msgid "Cancelled"
+msgstr "Storniert"
+
+#: includes/class-admin.php
+msgid "Returned"
+msgstr "Zurückgesendet"
+
+#: includes/class-admin.php
+msgid "Dispute"
+msgstr "Streitfall"
+
+#: includes/class-admin.php
+msgid "Expected Delivery Date"
+msgstr "Voraussichtliches Lieferdatum"
+
+#: includes/class-admin.php
+msgid "Tracking Code"
+msgstr "Sendungsnummer"
+
+#: includes/class-admin.php
+msgid "Enter tracking code"
+msgstr "Sendungsnummer eingeben"
+
+#: includes/class-admin.php
+msgid "Nalda Details"
+msgstr "Nalda-Details"
+
+#: includes/class-admin.php
+msgid "Order ID"
+msgstr "Bestell-ID"
+
+#: includes/class-admin.php
+msgid "Customer Paid"
+msgstr "Kundenzahlung"
+
+#: includes/class-admin.php
+msgid "Commission"
+msgstr "Provision"
+
+#: includes/class-admin.php
+msgid "Your Revenue"
+msgstr "Ihr Umsatz"
+
+#: includes/class-admin.php
+msgid "End Customer Email"
+msgstr "Endkunden-E-Mail"
+
+#: includes/class-admin.php
+msgid "Payout Status"
+msgstr "Auszahlungsstatus"
+
+#: includes/class-admin.php
+msgid "Export to Nalda:"
+msgstr "Zu Nalda exportieren:"
+
+#: includes/class-admin.php
+msgid "Follow default (%s)"
+msgstr "Standard verwenden (%s)"
+
+#: includes/class-admin.php
+msgid "Explicitly Include"
+msgstr "Explizit einschließen"
+
+#: includes/class-admin.php
+msgid "Explicitly Exclude"
+msgstr "Explizit ausschließen"
+
+#: includes/class-admin.php
+msgid "Include"
+msgstr "Einschließen"
+
+#: includes/class-admin.php
+msgid "Exclude"
+msgstr "Ausschließen"
+
+#: includes/class-admin.php
+msgid "Included"
+msgstr "Eingeschlossen"
+
+#: includes/class-admin.php
+msgid "Excluded"
+msgstr "Ausgeschlossen"
+
+#: includes/class-admin.php
+msgid "Included (default)"
+msgstr "Eingeschlossen (Standard)"
+
+#: includes/class-admin.php
+msgid "Excluded (default)"
+msgstr "Ausgeschlossen (Standard)"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Delivery Note"
+msgstr "Lieferschein"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Delivery Note #%s"
+msgstr "Lieferschein #%s"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Seller"
+msgstr "Verkäufer"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Buyer"
+msgstr "Käufer"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Description"
+msgstr "Beschreibung"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Quantity"
+msgstr "Menge"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Unit price"
+msgstr "Stückpreis"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Total"
+msgstr "Gesamt"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Grand Total"
+msgstr "Gesamtsumme"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Delivery type"
+msgstr "Lieferart"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Download Delivery Note"
+msgstr "Lieferschein herunterladen"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Unknown Product"
+msgstr "Unbekanntes Produkt"
+
+#: various
+msgid "Success"
+msgstr "Erfolg"
+
+#: various
+msgid "Error"
+msgstr "Fehler"
+
+#: various
+msgid "Warning"
+msgstr "Warnung"
+
+#: various
+msgid "Success!"
+msgstr "Erfolg!"
+
+#: various
+msgid "Error occurred"
+msgstr "Fehler aufgetreten"
+
+#: various
+msgid "Unknown error occurred."
+msgstr "Unbekannter Fehler aufgetreten."
+
+#: various
+msgid "Validation failed."
+msgstr "Validierung fehlgeschlagen."
+
+#: various
+msgid "Saving..."
+msgstr "Speichern..."
+
+#: various
+msgid "Testing..."
+msgstr "Testen..."
+
+#: various
+msgid "Activating..."
+msgstr "Aktivieren..."
+
+#: various
+msgid "Deactivating..."
+msgstr "Deaktivieren..."
+
+#: various
+msgid "Running..."
+msgstr "Wird ausgeführt..."
+
+#: various
+msgid "Syncing..."
+msgstr "Synchronisieren..."
+
+#: various
+msgid "Settings saved!"
+msgstr "Einstellungen gespeichert!"
+
+#: various
+msgid "Sync failed. Please try again."
+msgstr "Synchronisierung fehlgeschlagen. Bitte erneut versuchen."
+
+#: various
+msgid "Update failed. Please try again or update manually."
+msgstr "Update fehlgeschlagen. Bitte erneut versuchen oder manuell aktualisieren."
+
+#: various
+msgid "Successfully updated to version %s. Please refresh the page."
+msgstr "Erfolgreich auf Version %s aktualisiert. Bitte aktualisieren Sie die Seite."
+
+#: various
+msgid "Are you sure you want to run this sync now?"
+msgstr "Sind Sie sicher, dass Sie diese Synchronisierung jetzt ausführen möchten?"
+
+#: various
+msgid "Are you sure you want to clear all logs?"
+msgstr "Sind Sie sicher, dass Sie alle Protokolle löschen möchten?"
+
+#: various
+msgid "Are you sure you want to deactivate this license?"
+msgstr "Sind Sie sicher, dass Sie diese Lizenz deaktivieren möchten?"
+
+#: various
+msgid "Store Country"
+msgstr "Shop-Land"
+
+#: various
+msgid "Store Currency"
+msgstr "Shop-Währung"
+
+#: various
+msgid "From WooCommerce settings. %s"
+msgstr "Aus WooCommerce-Einstellungen. %s"
+
+#: various
+msgid "Change in WooCommerce"
+msgstr "In WooCommerce ändern"
+
+#: various
+msgid "Total Syncs"
+msgstr "Gesamt-Syncs"
+
+#: various
+msgid "Success Rate"
+msgstr "Erfolgsrate"
+
+#: various
+msgid "Errors"
+msgstr "Fehler"
+
+#: various
+msgid "Exported"
+msgstr "Exportiert"
+
+#: various
+msgid "Skipped"
+msgstr "Übersprungen"
+
+#: various
+msgid "Failed"
+msgstr "Fehlgeschlagen"
+
+#: various
+msgid "ID"
+msgstr "ID"
+
+#: various
+msgid "via Nalda"
+msgstr "über Nalda"
+
+#: various
+msgid "Commission Handling"
+msgstr "Provisionsabwicklung"
+
+#: various
+msgid "Go to Dashboard"
+msgstr "Zum Dashboard"
+
+#: various
+msgid "SFTP credentials are not configured."
+msgstr "SFTP-Zugangsdaten sind nicht konfiguriert."
+
+#: various
+msgid "Connection failed"
+msgstr "Verbindung fehlgeschlagen"
+
+#: various
+msgid "CSV upload failed."
+msgstr "CSV-Upload fehlgeschlagen."
+
+#: various
+msgid "Successfully uploaded to SFTP"
+msgstr "Erfolgreich auf SFTP hochgeladen"
+
+#: various
+msgid "Failed to fetch upload history."
+msgstr "Upload-Verlauf konnte nicht abgerufen werden."
+
+#: various
+msgid "Watchdog"
+msgstr "Watchdog"
+
+#: various
+msgid "Watchdog cron for reliability"
+msgstr "Watchdog-Cron für Zuverlässigkeit"
+
+#: various
+msgid "Watchdog: License invalid. All syncs disabled."
+msgstr "Watchdog: Lizenz ungültig. Alle Syncs deaktiviert."
+
+#: various
+msgid "Watchdog: Rescheduled stuck crons: %s"
+msgstr "Watchdog: Hängende Crons neu geplant: %s"
+
+#: various
+msgid "Don't have a license? %s"
+msgstr "Keine Lizenz? %s"
+
+#: various
+msgid "Purchase a license"
+msgstr "Lizenz erwerben"
