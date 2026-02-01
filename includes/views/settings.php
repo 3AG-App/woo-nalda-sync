@@ -252,7 +252,7 @@ $default_return_days   = get_option( 'wns_default_return_days', 14 );
                                value="<?php echo esc_attr( $order_import_range ); ?>" 
                                class="wns-input"
                                min="1"
-                               max="30"
+                               max="365"
                                <?php disabled( ! $license_valid ); ?>>
                         <p class="wns-help-text">
                             <?php esc_html_e( 'Number of days back to look for new orders.', 'woo-nalda-sync' ); ?>

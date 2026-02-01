@@ -125,7 +125,10 @@ class WNS_Ajax {
             update_option( 'wns_order_import_interval', sanitize_text_field( wp_unslash( $_POST['order_import_interval'] ) ) );
         }
         if ( isset( $_POST['order_import_range'] ) ) {
-            update_option( 'wns_order_import_range', sanitize_text_field( wp_unslash( $_POST['order_import_range'] ) ) );
+            $days = absint( wp_unslash( $_POST['order_import_range'] ) );
+            // Ensure reasonable bounds (1-365 days)
+            $days = max( 1, min( 365, $days ) );
+            update_option( 'wns_order_import_range', $days );
         }
 
         // Order status export settings

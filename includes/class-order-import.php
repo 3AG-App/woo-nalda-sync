@@ -108,16 +108,20 @@ class WNS_Order_Import {
      * @return array|WP_Error
      */
     private function fetch_orders( $api_key ) {
-        $range = get_option( 'wns_order_import_range', 'today' );
+        // Get days from settings (stored as integer)
+        $days = absint( get_option( 'wns_order_import_range', 7 ) );
+        $days = max( 1, min( 365, $days ) ); // Ensure reasonable bounds
 
-        $body = array( 'range' => $range );
-
-        // For custom range, calculate dates
-        if ( 'custom' === $range ) {
-            // Default to last 7 days for custom
-            $body['from'] = gmdate( 'Y-m-d', strtotime( '-7 days' ) );
-            $body['to']   = gmdate( 'Y-m-d' );
-        }
+        // Always use 'custom' range with calculated from/to dates
+        // Add 1 extra day buffer on 'from' to avoid missing orders due to timezone differences
+        // between WordPress server and Nalda server (orders near midnight edge cases)
+        $buffer_days = $days + 1;
+        
+        $body = array(
+            'range' => 'custom',
+            'from'  => gmdate( 'Y-m-d', strtotime( "-{$buffer_days} days" ) ),
+            'to'    => gmdate( 'Y-m-d', strtotime( '+1 day' ) ), // Include today fully by going to tomorrow
+        );
 
         $response = wp_remote_post(
             'https://sellers-api.nalda.com/orders/items',
