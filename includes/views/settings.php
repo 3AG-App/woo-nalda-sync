@@ -24,7 +24,7 @@ $product_export_enabled       = get_option( 'wns_product_export_enabled', false 
 $product_default_behavior     = get_option( 'wns_product_default_behavior', 'include' );
 $order_import_interval        = get_option( 'wns_order_import_interval', 'hourly' );
 $order_import_enabled         = get_option( 'wns_order_import_enabled', false );
-$order_import_range           = get_option( 'wns_order_import_range', 7 );
+$order_import_range           = get_option( 'wns_order_import_range', 'today' );
 $order_status_export_interval = get_option( 'wns_order_status_export_interval', 'hourly' );
 $order_status_export_enabled  = get_option( 'wns_order_status_export_enabled', false );
 
@@ -244,18 +244,29 @@ $default_return_days   = get_option( 'wns_default_return_days', 14 );
                     </div>
                     <div class="wns-form-col">
                         <label for="wns-order-import-range" class="wns-label">
-                            <?php esc_html_e( 'Import Range (Days)', 'woo-nalda-sync' ); ?>
+                            <?php esc_html_e( 'Import Range', 'woo-nalda-sync' ); ?>
                         </label>
-                        <input type="number" 
-                               id="wns-order-import-range" 
-                               name="order_import_range" 
-                               value="<?php echo esc_attr( $order_import_range ); ?>" 
-                               class="wns-input"
-                               min="1"
-                               max="365"
-                               <?php disabled( ! $license_valid ); ?>>
+                        <?php
+                        $range_options = array(
+                            'today'         => __( 'Today', 'woo-nalda-sync' ),
+                            'yesterday'     => __( 'Yesterday', 'woo-nalda-sync' ),
+                            'current-month' => __( 'Current Month', 'woo-nalda-sync' ),
+                            'current-year'  => __( 'Current Year', 'woo-nalda-sync' ),
+                            '3m'            => __( 'Last 3 Months', 'woo-nalda-sync' ),
+                            '6m'            => __( 'Last 6 Months', 'woo-nalda-sync' ),
+                            '12m'           => __( 'Last 12 Months', 'woo-nalda-sync' ),
+                            '24m'           => __( 'Last 24 Months', 'woo-nalda-sync' ),
+                        );
+                        ?>
+                        <select id="wns-order-import-range" name="order_import_range" class="wns-select" <?php disabled( ! $license_valid ); ?>>
+                            <?php foreach ( $range_options as $value => $label ) : ?>
+                                <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $order_import_range, $value ); ?>>
+                                    <?php echo esc_html( $label ); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                         <p class="wns-help-text">
-                            <?php esc_html_e( 'Number of days back to look for new orders.', 'woo-nalda-sync' ); ?>
+                            <?php esc_html_e( 'Date range to fetch orders from Nalda.', 'woo-nalda-sync' ); ?>
                         </p>
                     </div>
                 </div>

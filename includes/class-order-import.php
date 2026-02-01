@@ -141,19 +141,17 @@ class WNS_Order_Import {
      * @return array|WP_Error
      */
     private function fetch_orders( $api_key ) {
-        // Get days from settings (stored as integer)
-        $days = absint( get_option( 'wns_order_import_range', 7 ) );
-        $days = max( 1, min( 365, $days ) ); // Ensure reasonable bounds
+        // Get range from settings - uses valid Nalda API range values
+        $range = get_option( 'wns_order_import_range', 'today' );
 
-        // Always use 'custom' range with calculated from/to dates
-        // Add 1 extra day buffer on 'from' to avoid missing orders due to timezone differences
-        // between WordPress server and Nalda server (orders near midnight edge cases)
-        $buffer_days = $days + 1;
-        
+        // Validate range
+        $valid_ranges = array( 'today', 'yesterday', 'current-month', 'current-year', '3m', '6m', '12m', '24m' );
+        if ( ! in_array( $range, $valid_ranges, true ) ) {
+            $range = 'today';
+        }
+
         $body = array(
-            'range' => 'custom',
-            'from'  => gmdate( 'Y-m-d', strtotime( "-{$buffer_days} days" ) ),
-            'to'    => gmdate( 'Y-m-d', strtotime( '+1 day' ) ), // Include today fully by going to tomorrow
+            'range' => $range,
         );
 
         $response = wp_remote_post(
