@@ -79,48 +79,18 @@ class WNS_Ajax {
     }
 
     /**
-     * Verify nonce and capability (legacy method for backwards compatibility)
-     *
-     * @return bool|WP_Error
-     */
-    private function verify_request() {
-        if ( ! check_ajax_referer( 'wns_admin_nonce', 'nonce', false ) ) {
-            return new WP_Error( 'invalid_nonce', __( 'Security check failed.', 'woo-nalda-sync' ) );
-        }
-
-        if ( ! current_user_can( 'manage_woocommerce' ) ) {
-            return new WP_Error( 'no_permission', __( 'You do not have permission to perform this action.', 'woo-nalda-sync' ) );
-        }
-
-        return true;
-    }
-
-    /**
-     * Send JSON response
-     *
-     * @param bool   $success Success status.
-     * @param string $message Message.
-     * @param array  $data Additional data.
-     */
-    private function send_response( $success, $message, $data = array() ) {
-        wp_send_json(
-            array_merge(
-                array(
-                    'success' => $success,
-                    'message' => $message,
-                ),
-                $data
-            )
-        );
-    }
-
-    /**
      * Save settings
      */
     public function save_settings() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // SFTP settings
@@ -174,21 +144,35 @@ class WNS_Ajax {
         // Reschedule crons if intervals changed
         WNS()->scheduler->reschedule_all();
 
-        $this->send_response( true, __( 'Settings saved successfully.', 'woo-nalda-sync' ) );
+        wp_send_json_success(
+            array(
+                'message' => __( 'Settings saved successfully.', 'woo-nalda-sync' ),
+            )
+        );
     }
 
     /**
      * Test SFTP connection
      */
     public function test_sftp() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $license_key = get_option( 'wns_license_key', '' );
         if ( empty( $license_key ) ) {
-            $this->send_response( false, __( 'License key is required.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'License key is required.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $sftp_host     = get_option( 'wns_sftp_host', '' );
@@ -197,7 +181,11 @@ class WNS_Ajax {
         $sftp_password = get_option( 'wns_sftp_password', '' );
 
         if ( empty( $sftp_host ) || empty( $sftp_username ) || empty( $sftp_password ) ) {
-            $this->send_response( false, __( 'SFTP credentials are required.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'SFTP credentials are required.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $response = wp_remote_post(
@@ -216,17 +204,29 @@ class WNS_Ajax {
         );
 
         if ( is_wp_error( $response ) ) {
-            $this->send_response( false, $response->get_error_message() );
+            wp_send_json_error(
+                array(
+                    'message' => $response->get_error_message(),
+                )
+            );
         }
 
         $code = wp_remote_retrieve_response_code( $response );
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( 200 === $code ) {
-            $this->send_response( true, __( 'SFTP connection successful!', 'woo-nalda-sync' ) );
+            wp_send_json_success(
+                array(
+                    'message' => __( 'SFTP connection successful!', 'woo-nalda-sync' ),
+                )
+            );
         } else {
             $message = isset( $body['message'] ) ? $body['message'] : __( 'SFTP connection failed.', 'woo-nalda-sync' );
-            $this->send_response( false, $message );
+            wp_send_json_error(
+                array(
+                    'message' => $message,
+                )
+            );
         }
     }
 
@@ -234,14 +234,24 @@ class WNS_Ajax {
      * Test Nalda API connection
      */
     public function test_nalda_api() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $api_key = get_option( 'wns_nalda_api_key', '' );
         if ( empty( $api_key ) ) {
-            $this->send_response( false, __( 'Nalda API key is required.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Nalda API key is required.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // Test by fetching orders with minimal range
@@ -262,17 +272,33 @@ class WNS_Ajax {
         );
 
         if ( is_wp_error( $response ) ) {
-            $this->send_response( false, $response->get_error_message() );
+            wp_send_json_error(
+                array(
+                    'message' => $response->get_error_message(),
+                )
+            );
         }
 
         $code = wp_remote_retrieve_response_code( $response );
 
         if ( 200 === $code || 204 === $code ) {
-            $this->send_response( true, __( 'Nalda API connection successful!', 'woo-nalda-sync' ) );
+            wp_send_json_success(
+                array(
+                    'message' => __( 'Nalda API connection successful!', 'woo-nalda-sync' ),
+                )
+            );
         } elseif ( 401 === $code ) {
-            $this->send_response( false, __( 'Invalid API key.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Invalid API key.', 'woo-nalda-sync' ),
+                )
+            );
         } else {
-            $this->send_response( false, __( 'Nalda API connection failed.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Nalda API connection failed.', 'woo-nalda-sync' ),
+                )
+            );
         }
     }
 
@@ -280,15 +306,25 @@ class WNS_Ajax {
      * Run product export
      */
     public function run_product_export() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // Check rate limit
         $last_run = get_transient( 'wns_product_export_lock' );
         if ( $last_run ) {
-            $this->send_response( false, __( 'Please wait 30 seconds between manual exports.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please wait 30 seconds between manual exports.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // Set lock
@@ -298,17 +334,22 @@ class WNS_Ajax {
         $result = WNS()->product_export->run( 'manual' );
 
         if ( is_wp_error( $result ) ) {
-            $this->send_response( false, $result->get_error_message() );
+            wp_send_json_error(
+                array(
+                    'message' => $result->get_error_message(),
+                )
+            );
         }
 
-        $this->send_response(
-            true,
-            sprintf(
-                /* translators: %d: Number of products exported */
-                __( 'Successfully exported %d products.', 'woo-nalda-sync' ),
-                $result['exported']
-            ),
-            array( 'stats' => $result )
+        wp_send_json_success(
+            array(
+                'message' => sprintf(
+                    /* translators: %d: Number of products exported */
+                    __( 'Successfully exported %d products.', 'woo-nalda-sync' ),
+                    $result['exported']
+                ),
+                'stats'   => $result,
+            )
         );
     }
 
@@ -316,15 +357,25 @@ class WNS_Ajax {
      * Run order import
      */
     public function run_order_import() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // Check rate limit
         $last_run = get_transient( 'wns_order_import_lock' );
         if ( $last_run ) {
-            $this->send_response( false, __( 'Please wait 30 seconds between manual imports.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please wait 30 seconds between manual imports.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // Set lock
@@ -334,17 +385,22 @@ class WNS_Ajax {
         $result = WNS()->order_import->run( 'manual' );
 
         if ( is_wp_error( $result ) ) {
-            $this->send_response( false, $result->get_error_message() );
+            wp_send_json_error(
+                array(
+                    'message' => $result->get_error_message(),
+                )
+            );
         }
 
-        $this->send_response(
-            true,
-            sprintf(
-                /* translators: %d: Number of orders imported */
-                __( 'Successfully imported %d orders.', 'woo-nalda-sync' ),
-                $result['imported']
-            ),
-            array( 'stats' => $result )
+        wp_send_json_success(
+            array(
+                'message' => sprintf(
+                    /* translators: %d: Number of orders imported */
+                    __( 'Successfully imported %d orders.', 'woo-nalda-sync' ),
+                    $result['imported']
+                ),
+                'stats'   => $result,
+            )
         );
     }
 
@@ -352,15 +408,25 @@ class WNS_Ajax {
      * Run order status export
      */
     public function run_order_status_export() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // Check rate limit
         $last_run = get_transient( 'wns_order_status_export_lock' );
         if ( $last_run ) {
-            $this->send_response( false, __( 'Please wait 30 seconds between manual exports.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please wait 30 seconds between manual exports.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         // Set lock
@@ -370,17 +436,22 @@ class WNS_Ajax {
         $result = WNS()->order_status_export->run( 'manual' );
 
         if ( is_wp_error( $result ) ) {
-            $this->send_response( false, $result->get_error_message() );
+            wp_send_json_error(
+                array(
+                    'message' => $result->get_error_message(),
+                )
+            );
         }
 
-        $this->send_response(
-            true,
-            sprintf(
-                /* translators: %d: Number of order statuses exported */
-                __( 'Successfully exported %d order statuses.', 'woo-nalda-sync' ),
-                $result['exported']
-            ),
-            array( 'stats' => $result )
+        wp_send_json_success(
+            array(
+                'message' => sprintf(
+                    /* translators: %d: Number of order statuses exported */
+                    __( 'Successfully exported %d order statuses.', 'woo-nalda-sync' ),
+                    $result['exported']
+                ),
+                'stats'   => $result,
+            )
         );
     }
 
@@ -388,9 +459,15 @@ class WNS_Ajax {
      * Toggle product export
      */
     public function toggle_product_export() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $enabled = isset( $_POST['enabled'] ) && 'true' === $_POST['enabled'];
@@ -398,9 +475,12 @@ class WNS_Ajax {
 
         WNS()->scheduler->reschedule_product_export();
 
-        $this->send_response(
-            true,
-            $enabled ? __( 'Product export enabled.', 'woo-nalda-sync' ) : __( 'Product export disabled.', 'woo-nalda-sync' )
+        wp_send_json_success(
+            array(
+                'message' => $enabled 
+                    ? __( 'Product export enabled.', 'woo-nalda-sync' ) 
+                    : __( 'Product export disabled.', 'woo-nalda-sync' ),
+            )
         );
     }
 
@@ -408,9 +488,15 @@ class WNS_Ajax {
      * Toggle order import
      */
     public function toggle_order_import() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $enabled = isset( $_POST['enabled'] ) && 'true' === $_POST['enabled'];
@@ -418,9 +504,12 @@ class WNS_Ajax {
 
         WNS()->scheduler->reschedule_order_import();
 
-        $this->send_response(
-            true,
-            $enabled ? __( 'Order import enabled.', 'woo-nalda-sync' ) : __( 'Order import disabled.', 'woo-nalda-sync' )
+        wp_send_json_success(
+            array(
+                'message' => $enabled 
+                    ? __( 'Order import enabled.', 'woo-nalda-sync' ) 
+                    : __( 'Order import disabled.', 'woo-nalda-sync' ),
+            )
         );
     }
 
@@ -428,9 +517,15 @@ class WNS_Ajax {
      * Toggle order status export
      */
     public function toggle_order_status_export() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
+        $this->verify_nonce();
+
+        // Validate license
+        if ( ! WNS()->license->is_valid() ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please activate a valid license first.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $enabled = isset( $_POST['enabled'] ) && 'true' === $_POST['enabled'];
@@ -438,9 +533,12 @@ class WNS_Ajax {
 
         WNS()->scheduler->reschedule_order_status_export();
 
-        $this->send_response(
-            true,
-            $enabled ? __( 'Order status export enabled.', 'woo-nalda-sync' ) : __( 'Order status export disabled.', 'woo-nalda-sync' )
+        wp_send_json_success(
+            array(
+                'message' => $enabled 
+                    ? __( 'Order status export enabled.', 'woo-nalda-sync' ) 
+                    : __( 'Order status export disabled.', 'woo-nalda-sync' ),
+            )
         );
     }
 
@@ -448,32 +546,27 @@ class WNS_Ajax {
      * Get sync status
      */
     public function get_sync_status() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
-        }
+        $this->verify_nonce();
 
-        $this->send_response(
-            true,
-            '',
+        wp_send_json_success(
             array(
-                'product_export'       => array(
-                    'enabled'   => get_option( 'wns_product_export_enabled', false ),
-                    'last_run'  => get_option( 'wns_last_product_export_time', 0 ),
-                    'stats'     => get_option( 'wns_last_product_export_stats', array() ),
-                    'next_run'  => wp_next_scheduled( 'wns_product_export_event' ),
+                'product_export'      => array(
+                    'enabled'  => get_option( 'wns_product_export_enabled', false ),
+                    'last_run' => get_option( 'wns_last_product_export_time', 0 ),
+                    'stats'    => get_option( 'wns_last_product_export_stats', array() ),
+                    'next_run' => wp_next_scheduled( 'wns_product_export_event' ),
                 ),
-                'order_import'         => array(
-                    'enabled'   => get_option( 'wns_order_import_enabled', false ),
-                    'last_run'  => get_option( 'wns_last_order_import_time', 0 ),
-                    'stats'     => get_option( 'wns_last_order_import_stats', array() ),
-                    'next_run'  => wp_next_scheduled( 'wns_order_import_event' ),
+                'order_import'        => array(
+                    'enabled'  => get_option( 'wns_order_import_enabled', false ),
+                    'last_run' => get_option( 'wns_last_order_import_time', 0 ),
+                    'stats'    => get_option( 'wns_last_order_import_stats', array() ),
+                    'next_run' => wp_next_scheduled( 'wns_order_import_event' ),
                 ),
-                'order_status_export'  => array(
-                    'enabled'   => get_option( 'wns_order_status_export_enabled', false ),
-                    'last_run'  => get_option( 'wns_last_order_status_export_time', 0 ),
-                    'stats'     => get_option( 'wns_last_order_status_export_stats', array() ),
-                    'next_run'  => wp_next_scheduled( 'wns_order_status_export_event' ),
+                'order_status_export' => array(
+                    'enabled'  => get_option( 'wns_order_status_export_enabled', false ),
+                    'last_run' => get_option( 'wns_last_order_status_export_time', 0 ),
+                    'stats'    => get_option( 'wns_last_order_status_export_stats', array() ),
+                    'next_run' => wp_next_scheduled( 'wns_order_status_export_event' ),
                 ),
             )
         );
@@ -483,33 +576,41 @@ class WNS_Ajax {
      * Clear logs
      */
     public function clear_logs() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
-        }
+        $this->verify_nonce();
 
         WNS()->logs->clear();
 
-        $this->send_response( true, __( 'Logs cleared successfully.', 'woo-nalda-sync' ) );
+        wp_send_json_success(
+            array(
+                'message' => __( 'Logs cleared successfully.', 'woo-nalda-sync' ),
+            )
+        );
     }
 
     /**
      * Get log details
      */
     public function get_log_details() {
-        $verify = $this->verify_request();
-        if ( is_wp_error( $verify ) ) {
-            $this->send_response( false, $verify->get_error_message() );
-        }
+        $this->verify_nonce();
 
         $log_id = isset( $_POST['log_id'] ) ? absint( $_POST['log_id'] ) : 0;
+
         if ( ! $log_id ) {
-            $this->send_response( false, __( 'Invalid log ID.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Invalid log ID.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         $log = WNS()->logs->get( $log_id );
+
         if ( ! $log ) {
-            $this->send_response( false, __( 'Log not found.', 'woo-nalda-sync' ) );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Log not found.', 'woo-nalda-sync' ),
+                )
+            );
         }
 
         wp_send_json_success(
