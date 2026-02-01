@@ -111,13 +111,14 @@ Retrieves a paginated list of previous CSV uploads for the current license and d
 |-------|------|----------|-------------|
 | `license_key` | string | Yes | The license key |
 | `domain` | string | Yes | The activated domain |
+| `type` | string | No | Filter by CSV type: `orders` or `products` |
 | `per_page` | integer | No | Results per page (1-100, default: 15) |
 | `page` | integer | No | Page number (default: 1) |
 
 **Example Request:**
 
 ```
-GET /api/v3/nalda/csv-upload/list?license_key=XXXX-XXXX-XXXX-XXXX&domain=mystore.com&per_page=10&page=1
+GET /api/v3/nalda/csv-upload/list?license_key=XXXX-XXXX-XXXX-XXXX&domain=mystore.com&type=products&per_page=10&page=1
 ```
 
 **Success Response (200):**
