@@ -6,7 +6,7 @@ Tested up to: 6.7
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 8.5
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,11 +90,23 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 
 == Changelog ==
 
+= 1.0.4 =
+* Fixed: "New Order" admin email now shows correct order total instead of 0
+* Fixed: Emails are disabled during order creation, then triggered after totals are calculated
+* Improved: Order status is now set after items and totals are saved
+
 = 1.0.3 =
 * Added: Payout status updates for existing orders during import
 * Added: "Updated" counter in import statistics
 * Added: Order notes when payout status changes
 * Improved: Import now tracks imported/updated/skipped separately
+
+= 1.0.2 =
+* Added: CSV Upload History page with filtering and pagination
+* Added: Delivery note PDF generation for Nalda orders
+* Added: End customer email display in order metabox
+* Fixed: Delivery note logo saving
+* Improved: History page follows logs page design pattern
 
 = 1.0.2 =
 * Added: CSV Upload History page with filtering and pagination
@@ -122,6 +134,9 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 * German translation included
 
 == Upgrade Notice ==
+
+= 1.0.4 =
+Fixed "New Order" admin email showing 0 amount. Emails are now sent after order totals are calculated.
 
 = 1.0.3 =
 Orders already imported will now have their payout status updated when syncing.

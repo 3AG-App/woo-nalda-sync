@@ -341,10 +341,22 @@ class WNS_Order_Import {
             $total_commission += floatval( $item['commission'] ?? 0 );
         }
 
-        // Create order
-        $order = wc_create_order();
+        // Disable WooCommerce emails during order creation to prevent emails with 0 amounts.
+        // We'll re-enable and trigger emails manually after totals are calculated.
+        add_filter( 'woocommerce_email_enabled_new_order', '__return_false' );
+        add_filter( 'woocommerce_email_enabled_customer_processing_order', '__return_false' );
+        add_filter( 'woocommerce_email_enabled_customer_on_hold_order', '__return_false' );
+
+        // Create order with pending status first (don't trigger status change emails yet)
+        $order = wc_create_order( array(
+            'status' => 'pending',
+        ) );
 
         if ( is_wp_error( $order ) ) {
+            // Re-enable emails
+            remove_filter( 'woocommerce_email_enabled_new_order', '__return_false' );
+            remove_filter( 'woocommerce_email_enabled_customer_processing_order', '__return_false' );
+            remove_filter( 'woocommerce_email_enabled_customer_on_hold_order', '__return_false' );
             return $order;
         }
 
@@ -431,16 +443,12 @@ class WNS_Order_Import {
         // Store end customer email
         $order->update_meta_data( '_nalda_end_customer_email', $info['email'] ?? '' );
 
-        // Set status based on Nalda delivery status
-        $status = $this->map_nalda_status_to_wc( $delivery_status );
-        $order->set_status( $status );
-
         // Set order date
         if ( ! empty( $info['createdAt'] ) ) {
             $order->set_date_created( strtotime( $info['createdAt'] ) );
         }
 
-        // Calculate totals
+        // Calculate totals (this sets the order total correctly)
         $order->calculate_totals();
 
         // Add order note
@@ -454,8 +462,28 @@ class WNS_Order_Import {
             )
         );
 
-        // Save order
+        // Save order with all data (still pending status)
         $order->save();
+
+        // Now update status to appropriate WooCommerce status based on Nalda delivery status.
+        // This is done AFTER save so the totals are already in the database.
+        $delivery_status = $info['deliveryStatus'] ?? 'IN_PREPARATION';
+        $order->update_meta_data( '_nalda_state', $delivery_status );
+        $wc_status = $this->map_nalda_status_to_wc( $delivery_status );
+        $order->set_status( $wc_status, __( 'Order imported from Nalda Marketplace.', 'woo-nalda-sync' ) );
+        $order->save();
+
+        // Re-enable WooCommerce emails
+        remove_filter( 'woocommerce_email_enabled_new_order', '__return_false' );
+        remove_filter( 'woocommerce_email_enabled_customer_processing_order', '__return_false' );
+        remove_filter( 'woocommerce_email_enabled_customer_on_hold_order', '__return_false' );
+
+        // Manually trigger the new order email now that totals are correct.
+        // Reload the order from database to ensure we have fresh data.
+        $order = wc_get_order( $order->get_id() );
+        if ( $order ) {
+            do_action( 'woocommerce_order_status_pending_to_processing_notification', $order->get_id(), $order );
+        }
 
         return $order;
     }
