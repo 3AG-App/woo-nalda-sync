@@ -38,7 +38,40 @@ class WNS_Order_Import {
      * Constructor
      */
     public function __construct() {
-        // Nothing to initialize
+        // Permanently disable ALL customer-facing emails for Nalda orders
+        // Nalda handles all customer communication
+        add_filter( 'woocommerce_email_recipient_customer_processing_order', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_completed_order', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_on_hold_order', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_invoice', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_note', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_refunded_order', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_partially_refunded_order', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_new_account', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_reset_password', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+    }
+
+    /**
+     * Disable customer emails for Nalda orders
+     *
+     * @param string   $recipient Email recipient.
+     * @param WC_Order $order     Order object.
+     * @return string|false
+     */
+    public function disable_customer_emails_for_nalda_orders( $recipient, $order ) {
+        if ( ! $order || ! is_a( $order, 'WC_Order' ) ) {
+            return $recipient;
+        }
+
+        // Check if this is a Nalda order
+        $is_nalda_order = $order->get_meta( '_nalda_order' );
+
+        if ( 'yes' === $is_nalda_order ) {
+            // Nalda handles all customer communication
+            return false;
+        }
+
+        return $recipient;
     }
 
     /**
