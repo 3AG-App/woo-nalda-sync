@@ -123,6 +123,8 @@ class WNS_Admin {
                     'confirm_sync'          => __( 'Are you sure you want to run this sync now?', 'woo-nalda-sync' ),
                     'confirm_clear_logs'    => __( 'Are you sure you want to clear all logs?', 'woo-nalda-sync' ),
                     'running'               => __( 'Running...', 'woo-nalda-sync' ),
+                    'sync_running'          => __( 'Syncing...', 'woo-nalda-sync' ),
+                    'sync_error'            => __( 'Sync failed. Please try again.', 'woo-nalda-sync' ),
                     'success'               => __( 'Success!', 'woo-nalda-sync' ),
                     'error'                 => __( 'Error occurred', 'woo-nalda-sync' ),
                     'saving'                => __( 'Saving...', 'woo-nalda-sync' ),

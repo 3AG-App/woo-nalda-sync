@@ -126,6 +126,7 @@ class WNS_Order_Import {
                 'headers' => array(
                     'X-API-KEY'    => $api_key,
                     'Content-Type' => 'application/json',
+                    'Accept'       => 'application/json',
                 ),
                 'body'    => wp_json_encode( $body ),
             )
@@ -138,12 +139,14 @@ class WNS_Order_Import {
         $code = wp_remote_retrieve_response_code( $response );
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        if ( 200 !== $code ) {
+        // Check both HTTP status and API success flag
+        if ( 200 !== $code || empty( $body['success'] ) ) {
             $message = isset( $body['message'] ) ? $body['message'] : __( 'Failed to fetch orders from Nalda.', 'woo-nalda-sync' );
             return new WP_Error( 'fetch_failed', $message );
         }
 
-        return isset( $body['data'] ) ? $body['data'] : ( is_array( $body ) ? $body : array() );
+        // Nalda API returns orders in 'result' field, not 'data'
+        return isset( $body['result'] ) ? $body['result'] : array();
     }
 
     /**

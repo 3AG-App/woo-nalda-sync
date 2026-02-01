@@ -18,9 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WNS_License {
 
     /**
-     * API Base URL
+     * API Base URL - uses global constant for consistency
+     * @deprecated Use WNS_API_BASE_URL constant instead
      */
-    const API_URL = 'https://3ag.app/api/v3';
+    const API_URL = WNS_API_BASE_URL;
 
     /**
      * Product slug for API

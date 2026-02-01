@@ -200,7 +200,7 @@ class WNS_Ajax {
                 'body'    => wp_json_encode(
                     array(
                         'license_key'   => $license_key,
-                        'domain'        => $this->get_domain(),
+                        'domain'        => wns_get_domain(),
                         'sftp_host'     => $sftp_host,
                         'sftp_port'     => (int) $sftp_port,
                         'sftp_username' => $sftp_username,
@@ -868,14 +868,5 @@ class WNS_Ajax {
                 'message' => __( 'Product updated.', 'woo-nalda-sync' ),
             )
         );
-    }
-
-    /**
-     * Get domain
-     *
-     * @return string
-     */
-    private function get_domain() {
-        return wns_get_domain();
     }
 }
