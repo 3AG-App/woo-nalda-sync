@@ -26,6 +26,11 @@ $last_product_export = get_option( 'wns_last_product_export_time', 0 );
 $last_order_import   = get_option( 'wns_last_order_import_time', 0 );
 $last_status_export  = get_option( 'wns_last_order_status_export_time', 0 );
 
+// Get next scheduled run times
+$next_product_export = wp_next_scheduled( 'wns_product_export_event' );
+$next_order_import   = wp_next_scheduled( 'wns_order_import_event' );
+$next_status_export  = wp_next_scheduled( 'wns_order_status_export_event' );
+
 $product_export_stats = get_option( 'wns_last_product_export_stats', array() );
 $order_import_stats   = get_option( 'wns_last_order_import_stats', array() );
 $status_export_stats  = get_option( 'wns_last_order_status_export_stats', array() );
@@ -107,6 +112,17 @@ $stats = WNS()->logs->get_stats( 30 );
                             <?php esc_html_e( 'Schedule:', 'woo-nalda-sync' ); ?>
                             <strong><?php echo esc_html( $intervals[ $product_export_interval ]['display'] ?? $product_export_interval ); ?></strong>
                         </span>
+                        <?php if ( $product_export_enabled && $next_product_export ) : ?>
+                            <span class="wns-next-run">
+                                <?php
+                                printf(
+                                    /* translators: %s: human-readable time until next run */
+                                    esc_html__( 'Next run: %s', 'woo-nalda-sync' ),
+                                    esc_html( human_time_diff( time(), $next_product_export ) )
+                                );
+                                ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <div class="wns-sync-actions">
                         <button type="button" class="wns-btn wns-btn-primary wns-run-now" data-sync-type="product_export" <?php disabled( ! $license_valid ); ?>>
@@ -149,6 +165,17 @@ $stats = WNS()->logs->get_stats( 30 );
                             <?php esc_html_e( 'Schedule:', 'woo-nalda-sync' ); ?>
                             <strong><?php echo esc_html( $intervals[ $order_import_interval ]['display'] ?? $order_import_interval ); ?></strong>
                         </span>
+                        <?php if ( $order_import_enabled && $next_order_import ) : ?>
+                            <span class="wns-next-run">
+                                <?php
+                                printf(
+                                    /* translators: %s: human-readable time until next run */
+                                    esc_html__( 'Next run: %s', 'woo-nalda-sync' ),
+                                    esc_html( human_time_diff( time(), $next_order_import ) )
+                                );
+                                ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <div class="wns-sync-actions">
                         <button type="button" class="wns-btn wns-btn-primary wns-run-now" data-sync-type="order_import" <?php disabled( ! $license_valid ); ?>>
@@ -191,6 +218,17 @@ $stats = WNS()->logs->get_stats( 30 );
                             <?php esc_html_e( 'Schedule:', 'woo-nalda-sync' ); ?>
                             <strong><?php echo esc_html( $intervals[ $order_status_export_interval ]['display'] ?? $order_status_export_interval ); ?></strong>
                         </span>
+                        <?php if ( $order_status_export_enabled && $next_status_export ) : ?>
+                            <span class="wns-next-run">
+                                <?php
+                                printf(
+                                    /* translators: %s: human-readable time until next run */
+                                    esc_html__( 'Next run: %s', 'woo-nalda-sync' ),
+                                    esc_html( human_time_diff( time(), $next_status_export ) )
+                                );
+                                ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <div class="wns-sync-actions">
                         <button type="button" class="wns-btn wns-btn-primary wns-run-now" data-sync-type="order_status_export" <?php disabled( ! $license_valid ); ?>>

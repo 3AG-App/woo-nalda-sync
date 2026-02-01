@@ -1542,8 +1542,8 @@
 
 .wns-sync-schedule {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 4px;
     padding: 12px 0;
     border-top: 1px solid var(--wns-gray-100);
 }
@@ -1555,6 +1555,12 @@
 
 .wns-sync-schedule-info strong {
     color: var(--wns-gray-800);
+}
+
+.wns-next-run {
+    font-size: 12px;
+    color: var(--wns-primary);
+    font-weight: 500;
 }
 
 .wns-sync-actions {
