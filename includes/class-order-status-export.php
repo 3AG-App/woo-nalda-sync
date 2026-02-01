@@ -431,21 +431,22 @@ class WNS_Order_Status_Export {
     /**
      * Log result
      *
-     * @param string        $trigger_type Trigger type.
-     * @param array|WP_Error $result Result.
-     * @param array         $errors Errors.
-     * @param float         $duration Duration.
+     * @param string         $trigger_type Trigger type.
+     * @param array|WP_Error $result       Result.
+     * @param array          $errors       Errors.
+     * @param float          $duration     Duration.
      */
     private function log_result( $trigger_type, $result, $errors = array(), $duration = 0 ) {
         if ( is_wp_error( $result ) ) {
             WNS()->logs->add(
-                'order_status_export',
-                $trigger_type,
-                'error',
-                $result->get_error_message(),
-                array(),
-                array( $result->get_error_message() ),
-                $duration
+                array(
+                    'type'    => 'order_status_export',
+                    'trigger' => $trigger_type,
+                    'status'  => 'error',
+                    'message' => $result->get_error_message(),
+                    'stats'   => array(),
+                    'errors'  => array( $result->get_error_message() ),
+                )
             );
         } else {
             $status = ( isset( $result['errors'] ) && $result['errors'] > 0 ) ? 'warning' : 'success';
@@ -458,13 +459,14 @@ class WNS_Order_Status_Export {
             );
 
             WNS()->logs->add(
-                'order_status_export',
-                $trigger_type,
-                $status,
-                $message,
-                $result,
-                $errors,
-                $duration
+                array(
+                    'type'    => 'order_status_export',
+                    'trigger' => $trigger_type,
+                    'status'  => $status,
+                    'message' => $message,
+                    'stats'   => $result,
+                    'errors'  => $errors,
+                )
             );
         }
     }
