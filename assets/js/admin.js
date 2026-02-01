@@ -179,13 +179,28 @@
         testSftp: function (e) {
             e.preventDefault();
 
+            const sftp_host = $('#wns-sftp-host').val();
+            const sftp_port = $('#wns-sftp-port').val();
+            const sftp_username = $('#wns-sftp-username').val();
+            const sftp_password = $('#wns-sftp-password').val();
+
+            if (!sftp_host || !sftp_username || !sftp_password) {
+                WNS.toast(wns_admin.strings.sftp_required || 'SFTP credentials are required.', 'error');
+                return;
+            }
+
             const $btn = $('#wns-test-sftp');
             const originalHtml = $btn.html();
 
             $btn.prop('disabled', true)
                 .html('<span class="wns-spinner"></span> ' + wns_admin.strings.testing);
 
-            this.ajax('wns_test_sftp', {})
+            this.ajax('wns_test_sftp', {
+                sftp_host: sftp_host,
+                sftp_port: sftp_port,
+                sftp_username: sftp_username,
+                sftp_password: sftp_password
+            })
                 .done(function (response) {
                     if (response.success) {
                         WNS.toast(response.data.message, 'success');
@@ -207,13 +222,22 @@
         testNaldaApi: function (e) {
             e.preventDefault();
 
+            const api_key = $('#wns-nalda-api-key').val();
+
+            if (!api_key) {
+                WNS.toast(wns_admin.strings.api_key_required || 'Nalda API key is required.', 'error');
+                return;
+            }
+
             const $btn = $('#wns-test-nalda-api');
             const originalHtml = $btn.html();
 
             $btn.prop('disabled', true)
                 .html('<span class="wns-spinner"></span> ' + wns_admin.strings.testing);
 
-            this.ajax('wns_test_nalda_api', {})
+            this.ajax('wns_test_nalda_api', {
+                nalda_api_key: api_key
+            })
                 .done(function (response) {
                     if (response.success) {
                         WNS.toast(response.data.message, 'success');

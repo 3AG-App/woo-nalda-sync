@@ -175,10 +175,11 @@ class WNS_Ajax {
             );
         }
 
-        $sftp_host     = get_option( 'wns_sftp_host', '' );
-        $sftp_port     = get_option( 'wns_sftp_port', '2022' );
-        $sftp_username = get_option( 'wns_sftp_username', '' );
-        $sftp_password = get_option( 'wns_sftp_password', '' );
+        // Use values from POST (current form values) instead of saved options
+        $sftp_host     = isset( $_POST['sftp_host'] ) ? sanitize_text_field( wp_unslash( $_POST['sftp_host'] ) ) : '';
+        $sftp_port     = isset( $_POST['sftp_port'] ) ? sanitize_text_field( wp_unslash( $_POST['sftp_port'] ) ) : '2022';
+        $sftp_username = isset( $_POST['sftp_username'] ) ? sanitize_text_field( wp_unslash( $_POST['sftp_username'] ) ) : '';
+        $sftp_password = isset( $_POST['sftp_password'] ) ? sanitize_text_field( wp_unslash( $_POST['sftp_password'] ) ) : '';
 
         if ( empty( $sftp_host ) || empty( $sftp_username ) || empty( $sftp_password ) ) {
             wp_send_json_error(
@@ -245,7 +246,8 @@ class WNS_Ajax {
             );
         }
 
-        $api_key = get_option( 'wns_nalda_api_key', '' );
+        // Use value from POST (current form value) instead of saved option
+        $api_key = isset( $_POST['nalda_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['nalda_api_key'] ) ) : '';
         if ( empty( $api_key ) ) {
             wp_send_json_error(
                 array(
