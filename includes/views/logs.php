@@ -115,7 +115,8 @@ $total_pages = ceil( $total_logs / $per_page );
                     </thead>
                     <tbody>
                         <?php foreach ( $logs as $log ) : 
-                            $stats = ! empty( $log->stats ) ? json_decode( $log->stats, true ) : array();
+                            // Stats are already unserialized by get_logs()
+                            $stats = ! empty( $log->stats ) && is_array( $log->stats ) ? $log->stats : array();
                         ?>
                             <tr class="wns-log-row wns-log-<?php echo esc_attr( $log->status ); ?>">
                                 <td class="wns-col-status">
