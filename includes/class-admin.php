@@ -120,6 +120,7 @@ class WNS_Admin {
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
                 'nonce'    => wp_create_nonce( 'wns_admin_nonce' ),
                 'strings'  => array(
+                    'confirm_sync'          => __( 'Are you sure you want to run this sync now?', 'woo-nalda-sync' ),
                     'confirm_clear_logs'    => __( 'Are you sure you want to clear all logs?', 'woo-nalda-sync' ),
                     'running'               => __( 'Running...', 'woo-nalda-sync' ),
                     'success'               => __( 'Success!', 'woo-nalda-sync' ),
