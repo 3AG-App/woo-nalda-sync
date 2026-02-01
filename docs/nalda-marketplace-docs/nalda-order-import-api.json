@@ -1,0 +1,750 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Nalda Marketplace Public API",
+        "description": "# Welcome to the Nalda Marketplace Public API\n\nThis API provides secure access to your marketplace data including orders and order items.\n\n## Authentication\n\nMost endpoints require API key authentication. To use the API, you need to obtain an API key from the Nalda Seller Portal.\n\n### How to Obtain an API Key\n\n1. Visit the [Nalda Seller Portal](https://sellers.nalda.com/)\n2. Navigate to **Orders/Bestellungen**\n3. Click the **Settings icon** in the top right corner\n4. Generate or copy your API key\n\n### How to Use Your API Key\n\nInclude your API key in every request using one of these methods:\n\n**Option 1: HTTP Header (Recommended)**\n```\nX-API-KEY: your_api_key_here\n```\n\n**Option 2: Query Parameter**\n```\n?api_key=your_api_key_here\n```\n\n### Security Notes\n\n- Keep your API key secure and never share it publicly\n- API keys are encrypted and validated against Firebase Firestore\n- Revoked keys will be rejected immediately\n- Each API key is associated with a specific seller ID\n\n## Rate Limiting\n\nAPI requests are rate-limited to ensure fair usage and system stability. Default limits apply per IP address.\n\n## Support\n\nFor questions or issues, please contact Nalda support through the Seller Portal."
+    },
+    "externalDocs": {
+        "description": "View the raw OpenAPI Specification in JSON format",
+        "url": "/openapi.json"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "Current environment"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-API-KEY",
+                "description": "API key obtained from the Nalda Seller Portal (Orders → Settings)"
+            }
+        },
+        "schemas": {},
+        "parameters": {}
+    },
+    "paths": {
+        "/health-check": {
+            "get": {
+                "tags": [
+                    "Health Check"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "nullable": true
+                                        },
+                                        "statusCode": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "statusCode"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "description": "Get orders by filter. If \"range\" is \"custom\", \"from\" and \"to\" must be provided. There is a maximum of 1.000.000 items per request. Order items can be fetched by the order items API.",
+                "summary": "Get orders",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "description": "Filter (currently only \"range\" is supported)",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "range": {
+                                        "type": "string",
+                                        "enum": [
+                                            "3m",
+                                            "6m",
+                                            "12m",
+                                            "24m",
+                                            "today",
+                                            "yesterday",
+                                            "current-month",
+                                            "current-year",
+                                            "custom"
+                                        ]
+                                    },
+                                    "from": {
+                                        "type": "string",
+                                        "description": "ISO 8601 formatted date string (YYYY-MM-DD). Required if range is 'custom'."
+                                    },
+                                    "to": {
+                                        "type": "string",
+                                        "description": "ISO 8601 formatted date string (YYYY-MM-DD). Required if range is 'custom'."
+                                    }
+                                },
+                                "required": [
+                                    "range"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "orderId": {
+                                                        "type": "number"
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "description": "Order creation date"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "format": "email"
+                                                    },
+                                                    "country": {
+                                                        "type": "string"
+                                                    },
+                                                    "street1": {
+                                                        "type": "string"
+                                                    },
+                                                    "postalCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "collectionId": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "collectionName": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "lastName": {
+                                                        "type": "string"
+                                                    },
+                                                    "payoutStatus": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "OPEN",
+                                                            "PAID_OUT",
+                                                            "PARTIALLY_PAID_OUT",
+                                                            "ERROR"
+                                                        ]
+                                                    },
+                                                    "firstName": {
+                                                        "type": "string"
+                                                    },
+                                                    "fee": {
+                                                        "type": "number"
+                                                    },
+                                                    "refund": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "commission": {
+                                                        "type": "number"
+                                                    },
+                                                    "commissionPercentage": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "orderId",
+                                                    "createdAt",
+                                                    "email",
+                                                    "country",
+                                                    "street1",
+                                                    "postalCode",
+                                                    "city",
+                                                    "lastName",
+                                                    "payoutStatus",
+                                                    "firstName",
+                                                    "fee",
+                                                    "refund",
+                                                    "commission",
+                                                    "commissionPercentage"
+                                                ]
+                                            }
+                                        },
+                                        "statusCode": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "statusCode"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{orderId}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "description": "Get order by order ID. Order items can be fetched by the order items API.",
+                "summary": "Get order by order ID",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "description": "The numeric order id. Must be a positive unique numeric value.",
+                            "example": "12000"
+                        },
+                        "required": true,
+                        "name": "orderId",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "orderId": {
+                                                        "type": "number"
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "description": "Order creation date"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "format": "email"
+                                                    },
+                                                    "country": {
+                                                        "type": "string"
+                                                    },
+                                                    "street1": {
+                                                        "type": "string"
+                                                    },
+                                                    "postalCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "collectionId": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "collectionName": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "lastName": {
+                                                        "type": "string"
+                                                    },
+                                                    "payoutStatus": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "OPEN",
+                                                            "PAID_OUT",
+                                                            "PARTIALLY_PAID_OUT",
+                                                            "ERROR"
+                                                        ]
+                                                    },
+                                                    "firstName": {
+                                                        "type": "string"
+                                                    },
+                                                    "fee": {
+                                                        "type": "number"
+                                                    },
+                                                    "refund": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "commission": {
+                                                        "type": "number"
+                                                    },
+                                                    "commissionPercentage": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "orderId",
+                                                    "createdAt",
+                                                    "email",
+                                                    "country",
+                                                    "street1",
+                                                    "postalCode",
+                                                    "city",
+                                                    "lastName",
+                                                    "payoutStatus",
+                                                    "firstName",
+                                                    "fee",
+                                                    "refund",
+                                                    "commission",
+                                                    "commissionPercentage"
+                                                ]
+                                            }
+                                        },
+                                        "statusCode": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "statusCode"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/items": {
+            "post": {
+                "tags": [
+                    "Order Items"
+                ],
+                "description": "Get order items by filter. If \"range\" is \"custom\", \"from\" and \"to\" must be provided. There is a maximum of 1.000.000 items per request. Each order can contain multiple order items.",
+                "summary": "Get order items",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "description": "Filter (currently only \"range\" is supported)",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "range": {
+                                        "type": "string",
+                                        "enum": [
+                                            "3m",
+                                            "6m",
+                                            "12m",
+                                            "24m",
+                                            "today",
+                                            "yesterday",
+                                            "current-month",
+                                            "current-year",
+                                            "custom"
+                                        ]
+                                    },
+                                    "from": {
+                                        "type": "string",
+                                        "description": "ISO 8601 formatted date string (YYYY-MM-DD). Required if range is 'custom'."
+                                    },
+                                    "to": {
+                                        "type": "string",
+                                        "description": "ISO 8601 formatted date string (YYYY-MM-DD). Required if range is 'custom'."
+                                    }
+                                },
+                                "required": [
+                                    "range"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "orderId": {
+                                                        "type": "number"
+                                                    },
+                                                    "gtin": {
+                                                        "type": "string"
+                                                    },
+                                                    "quantity": {
+                                                        "type": "number"
+                                                    },
+                                                    "price": {
+                                                        "type": "number"
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "description": "Order item creation date"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "format": "email"
+                                                    },
+                                                    "country": {
+                                                        "type": "string"
+                                                    },
+                                                    "street1": {
+                                                        "type": "string"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "postalCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "deliveryStatus": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "IN_PREPARATION",
+                                                            "IN_DELIVERY",
+                                                            "DELIVERED",
+                                                            "UNDELIVERABLE",
+                                                            "CANCELLED",
+                                                            "READY_TO_COLLECT",
+                                                            "COLLECTED",
+                                                            "NOT_PICKED_UP",
+                                                            "RETURNED",
+                                                            "DISPUTE"
+                                                        ]
+                                                    },
+                                                    "collectionId": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "collectionName": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "condition": {
+                                                        "type": "string"
+                                                    },
+                                                    "lastName": {
+                                                        "type": "string"
+                                                    },
+                                                    "currency": {
+                                                        "type": "string"
+                                                    },
+                                                    "deliveryDatePlanned": {
+                                                        "type": "string",
+                                                        "description": "Planned delivery date"
+                                                    },
+                                                    "payoutStatus": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "OPEN",
+                                                            "PAID_OUT",
+                                                            "PARTIALLY_PAID_OUT",
+                                                            "ERROR"
+                                                        ]
+                                                    },
+                                                    "firstName": {
+                                                        "type": "string"
+                                                    },
+                                                    "refund": {
+                                                        "type": "number"
+                                                    },
+                                                    "commission": {
+                                                        "type": "number"
+                                                    },
+                                                    "commissionPercentage": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "orderId",
+                                                    "gtin",
+                                                    "quantity",
+                                                    "price",
+                                                    "createdAt",
+                                                    "email",
+                                                    "country",
+                                                    "street1",
+                                                    "title",
+                                                    "postalCode",
+                                                    "deliveryStatus",
+                                                    "city",
+                                                    "condition",
+                                                    "lastName",
+                                                    "currency",
+                                                    "deliveryDatePlanned",
+                                                    "payoutStatus",
+                                                    "firstName",
+                                                    "refund",
+                                                    "commission",
+                                                    "commissionPercentage"
+                                                ]
+                                            }
+                                        },
+                                        "statusCode": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "statusCode"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{orderId}/items": {
+            "get": {
+                "tags": [
+                    "Order Items"
+                ],
+                "description": "Get order items by order ID. An order can contain multiple order items.",
+                "summary": "Get order items by order ID",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "description": "The numeric order id. Must be a positive unique numeric value.",
+                            "example": "12000"
+                        },
+                        "required": true,
+                        "name": "orderId",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "orderId": {
+                                                        "type": "number"
+                                                    },
+                                                    "gtin": {
+                                                        "type": "string"
+                                                    },
+                                                    "quantity": {
+                                                        "type": "number"
+                                                    },
+                                                    "price": {
+                                                        "type": "number"
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "description": "Order item creation date"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "format": "email"
+                                                    },
+                                                    "country": {
+                                                        "type": "string"
+                                                    },
+                                                    "street1": {
+                                                        "type": "string"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "postalCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "deliveryStatus": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "IN_PREPARATION",
+                                                            "IN_DELIVERY",
+                                                            "DELIVERED",
+                                                            "UNDELIVERABLE",
+                                                            "CANCELLED",
+                                                            "READY_TO_COLLECT",
+                                                            "COLLECTED",
+                                                            "NOT_PICKED_UP",
+                                                            "RETURNED",
+                                                            "DISPUTE"
+                                                        ]
+                                                    },
+                                                    "collectionId": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "collectionName": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "condition": {
+                                                        "type": "string"
+                                                    },
+                                                    "lastName": {
+                                                        "type": "string"
+                                                    },
+                                                    "currency": {
+                                                        "type": "string"
+                                                    },
+                                                    "deliveryDatePlanned": {
+                                                        "type": "string",
+                                                        "description": "Planned delivery date"
+                                                    },
+                                                    "payoutStatus": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "OPEN",
+                                                            "PAID_OUT",
+                                                            "PARTIALLY_PAID_OUT",
+                                                            "ERROR"
+                                                        ]
+                                                    },
+                                                    "firstName": {
+                                                        "type": "string"
+                                                    },
+                                                    "refund": {
+                                                        "type": "number"
+                                                    },
+                                                    "commission": {
+                                                        "type": "number"
+                                                    },
+                                                    "commissionPercentage": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "orderId",
+                                                    "gtin",
+                                                    "quantity",
+                                                    "price",
+                                                    "createdAt",
+                                                    "email",
+                                                    "country",
+                                                    "street1",
+                                                    "title",
+                                                    "postalCode",
+                                                    "deliveryStatus",
+                                                    "city",
+                                                    "condition",
+                                                    "lastName",
+                                                    "currency",
+                                                    "deliveryDatePlanned",
+                                                    "payoutStatus",
+                                                    "firstName",
+                                                    "refund",
+                                                    "commission",
+                                                    "commissionPercentage"
+                                                ]
+                                            }
+                                        },
+                                        "statusCode": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "statusCode"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
