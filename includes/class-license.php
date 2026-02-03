@@ -376,7 +376,6 @@ class WNS_License {
         // Restore product export if it was previously enabled
         if ( ! empty( $previous_states['product_export'] ) ) {
             update_option( 'wns_product_export_enabled', true );
-            $interval = get_option( 'wns_product_export_interval', 'daily' );
             if ( function_exists( 'WNS' ) && WNS()->scheduler ) {
                 WNS()->scheduler->reschedule_product_export();
             }
