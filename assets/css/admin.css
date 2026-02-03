@@ -1151,6 +1151,14 @@
     border-color: var(--wns-success);
 }
 
+.wns-license-card.wns-license-warning {
+    border-color: var(--wns-warning);
+}
+
+.wns-license-card.wns-license-expired {
+    border-color: var(--wns-danger);
+}
+
 .wns-license-status-display {
     display: flex;
     align-items: center;
@@ -1176,6 +1184,16 @@
 .wns-license-active .wns-license-icon {
     background: var(--wns-success-light);
     color: var(--wns-success);
+}
+
+.wns-license-warning .wns-license-icon {
+    background: var(--wns-warning-light);
+    color: var(--wns-warning);
+}
+
+.wns-license-expired .wns-license-icon {
+    background: var(--wns-danger-light);
+    color: var(--wns-danger);
 }
 
 .wns-license-inactive .wns-license-icon {
@@ -1273,6 +1291,28 @@
 .wns-license-actions {
     display: flex;
     gap: 12px;
+    flex-wrap: wrap;
+}
+
+.wns-activation-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: var(--wns-warning-light);
+    color: var(--wns-warning);
+    border-radius: var(--wns-radius);
+    font-size: 14px;
+}
+
+.wns-activation-notice .dashicons {
+    flex-shrink: 0;
+}
+
+.wns-btn-lg {
+    padding: 12px 24px;
+    font-size: 15px;
 }
 
 .wns-license-help {
@@ -1401,6 +1441,10 @@
 
 .wns-toast-error {
     background: var(--wns-danger);
+}
+
+.wns-toast-warning {
+    background: var(--wns-warning);
 }
 
 .wns-toast-info {

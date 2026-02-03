@@ -105,6 +105,7 @@
             $('#wns-license-form').on('submit', this.activateLicense.bind(this));
             $('#wns-deactivate-license').on('click', this.deactivateLicense.bind(this));
             $('#wns-check-license').on('click', this.checkLicense.bind(this));
+            $('#wns-activate-domain').on('click', this.activateDomain.bind(this));
 
             // Updates
             $('#wns-check-update').on('click', this.checkUpdate.bind(this));
@@ -567,6 +568,37 @@
         },
 
         /**
+         * Activate domain for existing license
+         * Used when license is valid but not activated on this domain
+         */
+        activateDomain: function (e) {
+            e.preventDefault();
+
+            const $btn = $('#wns-activate-domain');
+            const originalHtml = $btn.html();
+
+            $btn.prop('disabled', true)
+                .html('<span class="wns-spinner"></span> ' + wns_admin.strings.activating);
+
+            this.ajax('wns_activate_domain', {})
+                .done(function (response) {
+                    if (response.success) {
+                        WNS.toast(response.data.message, 'success');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        WNS.toast(response.data.message, 'error');
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                })
+                .fail(function () {
+                    WNS.toast('Failed to activate domain', 'error');
+                    $btn.prop('disabled', false).html(originalHtml);
+                });
+        },
+
+        /**
          * Deactivate license
          */
         deactivateLicense: function (e) {
@@ -610,10 +642,19 @@
             this.ajax('wns_check_license', {})
                 .done(function (response) {
                     if (response.success) {
-                        if (response.data.activated) {
+                        if (response.data.valid && response.data.activated) {
                             WNS.toast('License is valid and active', 'success');
+                        } else if (response.data.valid && !response.data.activated) {
+                            WNS.toast('License is valid but not activated on this domain', 'warning');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
                         } else {
-                            WNS.toast('License is not active for this domain', 'error');
+                            const status = response.data.data && response.data.data.status ? response.data.data.status : 'invalid';
+                            WNS.toast('License is ' + status, 'error');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
                         }
                     } else {
                         WNS.toast(response.data.message, 'error');

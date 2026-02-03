@@ -46,6 +46,7 @@ class WNS_Ajax {
 
         // License
         add_action( 'wp_ajax_wns_activate_license', array( $this, 'activate_license' ) );
+        add_action( 'wp_ajax_wns_activate_domain', array( $this, 'activate_domain' ) );
         add_action( 'wp_ajax_wns_deactivate_license', array( $this, 'deactivate_license' ) );
         add_action( 'wp_ajax_wns_check_license', array( $this, 'check_license' ) );
 
@@ -685,7 +686,67 @@ class WNS_Ajax {
                 )
             );
         } else {
-            wp_send_json_error( $result );
+            // Provide user-friendly error messages for common cases
+            $message = isset( $result['message'] ) ? $result['message'] : __( 'Activation failed.', 'woo-nalda-sync' );
+
+            // Check for domain limit error
+            if ( strpos( $message, 'Domain limit' ) !== false || strpos( $message, 'limit reached' ) !== false ) {
+                $message = __( 'Domain activation limit reached. Please deactivate another domain from your license dashboard first.', 'woo-nalda-sync' );
+            }
+
+            // Check for license not active error (403)
+            if ( strpos( $message, 'not active' ) !== false || strpos( $message, 'is not active' ) !== false ) {
+                $message = __( 'This license is not active. It may be expired, suspended, or cancelled.', 'woo-nalda-sync' );
+            }
+
+            wp_send_json_error(
+                array(
+                    'message' => $message,
+                )
+            );
+        }
+    }
+
+    /**
+     * Activate domain for existing license
+     * Used when a license is valid but not activated on this domain
+     */
+    public function activate_domain() {
+        $this->verify_nonce();
+
+        $license_key = WNS()->license->get_key();
+
+        if ( empty( $license_key ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'No license key found. Please enter a license key.', 'woo-nalda-sync' ),
+                )
+            );
+        }
+
+        $result = WNS()->license->activate( $license_key );
+
+        if ( $result['success'] ) {
+            wp_send_json_success(
+                array(
+                    'message' => __( 'Domain activated successfully!', 'woo-nalda-sync' ),
+                    'data'    => $result['data'],
+                )
+            );
+        } else {
+            // Provide user-friendly error messages for common cases
+            $message = isset( $result['message'] ) ? $result['message'] : __( 'Activation failed.', 'woo-nalda-sync' );
+
+            // Check for domain limit error
+            if ( strpos( $message, 'Domain limit' ) !== false || strpos( $message, 'limit reached' ) !== false ) {
+                $message = __( 'Domain activation limit reached. Please deactivate another domain from your license dashboard first.', 'woo-nalda-sync' );
+            }
+
+            wp_send_json_error(
+                array(
+                    'message' => $message,
+                )
+            );
         }
     }
 
@@ -697,10 +758,11 @@ class WNS_Ajax {
 
         $result = WNS()->license->deactivate();
 
-        // Disable all syncs
+        // Disable all syncs and clear restore data
         update_option( 'wns_product_export_enabled', false );
         update_option( 'wns_order_import_enabled', false );
         update_option( 'wns_order_status_export_enabled', false );
+        delete_option( 'wns_syncs_disabled_by_license' );
 
         WNS()->scheduler->unschedule( 'wns_product_export_event' );
         WNS()->scheduler->unschedule( 'wns_order_import_event' );
@@ -723,18 +785,19 @@ class WNS_Ajax {
     }
 
     /**
-     * Check license status
+     * Check/validate license status
      */
     public function check_license() {
         $this->verify_nonce();
 
-        $result = WNS()->license->check();
+        $result = WNS()->license->validate();
 
-        if ( $result['success'] ) {
+        if ( $result['success'] && isset( $result['data'] ) ) {
             wp_send_json_success(
                 array(
-                    'activated' => isset( $result['data']['activated'] ) ? $result['data']['activated'] : false,
-                    'data'      => isset( $result['data']['license'] ) ? $result['data']['license'] : $result['data'],
+                    'valid'     => ! empty( $result['data']['valid'] ),
+                    'activated' => ! empty( $result['data']['activated'] ),
+                    'data'      => $result['data'],
                 )
             );
         } else {

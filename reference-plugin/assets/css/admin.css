@@ -1131,6 +1131,14 @@
     border-color: var(--wssc-success);
 }
 
+.wssc-license-card.wssc-license-warning {
+    border-color: var(--wssc-warning);
+}
+
+.wssc-license-card.wssc-license-expired {
+    border-color: var(--wssc-danger);
+}
+
 .wssc-license-status-display {
     display: flex;
     align-items: center;
@@ -1156,6 +1164,16 @@
 .wssc-license-active .wssc-license-icon {
     background: var(--wssc-success-light);
     color: var(--wssc-success);
+}
+
+.wssc-license-warning .wssc-license-icon {
+    background: var(--wssc-warning-light);
+    color: var(--wssc-warning);
+}
+
+.wssc-license-expired .wssc-license-icon {
+    background: var(--wssc-danger-light);
+    color: var(--wssc-danger);
 }
 
 .wssc-license-inactive .wssc-license-icon {
@@ -1253,6 +1271,28 @@
 .wssc-license-actions {
     display: flex;
     gap: 12px;
+    flex-wrap: wrap;
+}
+
+.wssc-activation-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: var(--wssc-warning-light);
+    color: var(--wssc-warning);
+    border-radius: var(--wssc-radius);
+    font-size: 14px;
+}
+
+.wssc-activation-notice .dashicons {
+    flex-shrink: 0;
+}
+
+.wssc-btn-lg {
+    padding: 12px 24px;
+    font-size: 15px;
 }
 
 .wssc-license-help {
@@ -1417,6 +1457,14 @@
 
 .wssc-toast-error {
     background: var(--wssc-danger);
+}
+
+.wssc-toast-warning {
+    background: var(--wssc-warning);
+}
+
+.wssc-toast-info {
+    background: var(--wssc-primary);
 }
 
 @keyframes wssc-toast-in {

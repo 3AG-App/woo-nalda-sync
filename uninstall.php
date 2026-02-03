@@ -20,10 +20,58 @@ if ( ! current_user_can( 'activate_plugins' ) ) {
 }
 
 /**
+ * Deactivate license from 3AG License API
+ * This frees up the activation slot for use on another domain
+ */
+function wns_uninstall_deactivate_license() {
+    $license_key = get_option( 'wns_license_key' );
+
+    if ( empty( $license_key ) ) {
+        return;
+    }
+
+    // Get the domain
+    $site_url = site_url();
+    $parsed   = wp_parse_url( $site_url );
+    $domain   = isset( $parsed['host'] ) ? $parsed['host'] : '';
+    $domain   = preg_replace( '/^www\./', '', $domain );
+    $domain   = preg_replace( '/:\d+$/', '', $domain );
+
+    if ( empty( $domain ) ) {
+        return;
+    }
+
+    // Make API request to deactivate
+    wp_remote_post(
+        'https://3ag.app/api/v3/licenses/deactivate',
+        array(
+            'timeout' => 15,
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Accept'       => 'application/json',
+            ),
+            'body'    => wp_json_encode(
+                array(
+                    'license_key'  => $license_key,
+                    'product_slug' => 'woo-nalda-sync',
+                    'domain'       => $domain,
+                )
+            ),
+        )
+    );
+
+    // We don't need to check the response - best effort deactivation
+    // The license will still be deleted locally regardless
+}
+
+/**
  * Clean up all plugin data
  */
 function wns_uninstall_cleanup() {
     global $wpdb;
+
+    // First, deactivate the license from the API
+    wns_uninstall_deactivate_license();
 
     // Delete all plugin options
     $options_to_delete = array(
@@ -56,6 +104,7 @@ function wns_uninstall_cleanup() {
         'wns_license_status',
         'wns_license_data',
         'wns_license_last_check',
+        'wns_syncs_disabled_by_license',
         // Sync tracking
         'wns_last_product_export_time',
         'wns_last_product_export_stats',

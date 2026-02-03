@@ -2,6 +2,13 @@
 /**
  * License View
  *
+ * Displays license status, activation form, and management options.
+ *
+ * @var string $license_key    The stored license key
+ * @var string $license_status The local license status ('active', 'not_activated', 'invalid', '')
+ * @var array  $license_data   License data from API (valid, activated, status, expires_at, activations, product, package)
+ * @var int    $last_check     Unix timestamp of last license check
+ *
  * @package Woo_Nalda_Sync
  */
 
@@ -14,11 +21,28 @@ $license_status = get_option( 'wns_license_status', '' );
 $license_data   = WNS()->license->get_license_data();
 $last_check     = get_option( 'wns_license_last_check', 0 );
 
-$is_active    = $license_status === 'active';
+// Determine license state
+$is_active         = 'active' === $license_status;
+$needs_activation  = 'not_activated' === $license_status;
+$is_invalid        = 'invalid' === $license_status;
+$has_license       = ! empty( $license_key );
+
+// Extract license data
 $expires_at   = isset( $license_data['expires_at'] ) ? $license_data['expires_at'] : null;
 $activations  = isset( $license_data['activations'] ) ? $license_data['activations'] : null;
 $product_name = isset( $license_data['product'] ) ? $license_data['product'] : '';
 $package      = isset( $license_data['package'] ) ? $license_data['package'] : '';
+$api_status   = isset( $license_data['status'] ) ? $license_data['status'] : '';
+
+// Determine card class based on state
+$card_class = 'wns-license-inactive';
+if ( $is_active ) {
+    $card_class = 'wns-license-active';
+} elseif ( $needs_activation ) {
+    $card_class = 'wns-license-warning';
+} elseif ( $is_invalid ) {
+    $card_class = 'wns-license-expired';
+}
 ?>
 
 <div class="wns-wrap">
@@ -31,12 +55,16 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
 
     <div class="wns-license-container">
         <!-- License Status Card -->
-        <div class="wns-section wns-card wns-license-card <?php echo $is_active ? 'wns-license-active' : 'wns-license-inactive'; ?>">
+        <div class="wns-section wns-card wns-license-card <?php echo esc_attr( $card_class ); ?>">
             <div class="wns-card-body">
                 <div class="wns-license-status-display">
                     <div class="wns-license-icon">
                         <?php if ( $is_active ) : ?>
                             <span class="dashicons dashicons-yes-alt"></span>
+                        <?php elseif ( $needs_activation ) : ?>
+                            <span class="dashicons dashicons-warning"></span>
+                        <?php elseif ( $is_invalid ) : ?>
+                            <span class="dashicons dashicons-dismiss"></span>
                         <?php else : ?>
                             <span class="dashicons dashicons-lock"></span>
                         <?php endif; ?>
@@ -45,6 +73,19 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
                         <h2>
                             <?php if ( $is_active ) : ?>
                                 <?php esc_html_e( 'License Active', 'woo-nalda-sync' ); ?>
+                            <?php elseif ( $needs_activation ) : ?>
+                                <?php esc_html_e( 'Activation Required', 'woo-nalda-sync' ); ?>
+                            <?php elseif ( $is_invalid ) : ?>
+                                <?php
+                                // Show specific status
+                                $status_labels = array(
+                                    'expired'   => __( 'License Expired', 'woo-nalda-sync' ),
+                                    'suspended' => __( 'License Suspended', 'woo-nalda-sync' ),
+                                    'cancelled' => __( 'License Cancelled', 'woo-nalda-sync' ),
+                                    'paused'    => __( 'License Paused', 'woo-nalda-sync' ),
+                                );
+                                echo isset( $status_labels[ $api_status ] ) ? esc_html( $status_labels[ $api_status ] ) : esc_html__( 'License Invalid', 'woo-nalda-sync' );
+                                ?>
                             <?php else : ?>
                                 <?php esc_html_e( 'License Not Active', 'woo-nalda-sync' ); ?>
                             <?php endif; ?>
@@ -56,13 +97,27 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
                                     <span class="wns-license-package"><?php echo esc_html( $package ); ?></span>
                                 <?php endif; ?>
                             </p>
-                        <?php elseif ( ! $is_active ) : ?>
+                        <?php elseif ( $needs_activation ) : ?>
+                            <p><?php esc_html_e( 'Your license is valid but not activated on this domain. Click "Activate on This Domain" below.', 'woo-nalda-sync' ); ?></p>
+                        <?php elseif ( $is_invalid ) : ?>
+                            <p>
+                                <?php
+                                $status_messages = array(
+                                    'expired'   => __( 'Your license has expired. Please renew to continue using premium features.', 'woo-nalda-sync' ),
+                                    'suspended' => __( 'Your license has been suspended. Please contact support.', 'woo-nalda-sync' ),
+                                    'cancelled' => __( 'Your license has been cancelled.', 'woo-nalda-sync' ),
+                                    'paused'    => __( 'Your subscription is paused. Please resume it to continue.', 'woo-nalda-sync' ),
+                                );
+                                echo isset( $status_messages[ $api_status ] ) ? esc_html( $status_messages[ $api_status ] ) : esc_html__( 'Your license is no longer valid.', 'woo-nalda-sync' );
+                                ?>
+                            </p>
+                        <?php elseif ( ! $has_license ) : ?>
                             <p><?php esc_html_e( 'Enter your license key to activate premium features.', 'woo-nalda-sync' ); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <?php if ( $is_active ) : ?>
+                <?php if ( $has_license && ( $is_active || $needs_activation || $is_invalid ) ) : ?>
                     <div class="wns-license-details">
                         <div class="wns-license-detail-grid">
                             <!-- Expiration -->
@@ -70,11 +125,11 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
                                 <span class="wns-detail-label"><?php esc_html_e( 'Expires', 'woo-nalda-sync' ); ?></span>
                                 <span class="wns-detail-value">
                                     <?php if ( $expires_at ) : ?>
-                                        <?php 
+                                        <?php
                                         $expiry_date = strtotime( $expires_at );
                                         $remaining   = WNS()->license->get_remaining_days();
                                         echo esc_html( wp_date( 'F j, Y', $expiry_date ) );
-                                        if ( $remaining !== null ) {
+                                        if ( null !== $remaining ) {
                                             if ( $remaining > 0 ) {
                                                 echo ' <span class="wns-days-remaining">(' . sprintf( esc_html__( '%d days left', 'woo-nalda-sync' ), $remaining ) . ')</span>';
                                             } else {
@@ -93,12 +148,12 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
                                 <div class="wns-license-detail-item">
                                     <span class="wns-detail-label"><?php esc_html_e( 'Activations', 'woo-nalda-sync' ); ?></span>
                                     <span class="wns-detail-value">
-                                        <?php 
+                                        <?php
                                         printf(
                                             esc_html__( '%1$d of %2$d used', 'woo-nalda-sync' ),
                                             intval( $activations['used'] ),
                                             intval( $activations['limit'] )
-                                        ); 
+                                        );
                                         ?>
                                     </span>
                                 </div>
@@ -124,7 +179,15 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
             <div class="wns-card-header">
                 <h2>
                     <span class="dashicons dashicons-admin-network"></span>
-                    <?php echo $is_active ? esc_html__( 'License Management', 'woo-nalda-sync' ) : esc_html__( 'Activate License', 'woo-nalda-sync' ); ?>
+                    <?php
+                    if ( $is_active ) {
+                        esc_html_e( 'License Management', 'woo-nalda-sync' );
+                    } elseif ( $needs_activation ) {
+                        esc_html_e( 'Domain Activation', 'woo-nalda-sync' );
+                    } else {
+                        esc_html_e( 'Activate License', 'woo-nalda-sync' );
+                    }
+                    ?>
                 </h2>
             </div>
             <div class="wns-card-body">
@@ -134,7 +197,7 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
                         <label class="wns-label"><?php esc_html_e( 'Current License Key', 'woo-nalda-sync' ); ?></label>
                         <div class="wns-license-key-masked">
                             <span class="wns-key-value">
-                                <?php 
+                                <?php
                                 $key_length = strlen( $license_key );
                                 if ( $key_length > 8 ) {
                                     $masked_key = substr( $license_key, 0, 4 ) . str_repeat( '•', $key_length - 8 ) . substr( $license_key, -4 );
@@ -159,6 +222,94 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
                             <?php esc_html_e( 'Deactivate License', 'woo-nalda-sync' ); ?>
                         </button>
                     </div>
+
+                <?php elseif ( $needs_activation ) : ?>
+                    <!-- License valid but needs domain activation -->
+                    <div class="wns-license-key-display">
+                        <label class="wns-label"><?php esc_html_e( 'Current License Key', 'woo-nalda-sync' ); ?></label>
+                        <div class="wns-license-key-masked">
+                            <span class="wns-key-value">
+                                <?php
+                                $key_length = strlen( $license_key );
+                                if ( $key_length > 8 ) {
+                                    $masked_key = substr( $license_key, 0, 4 ) . str_repeat( '•', $key_length - 8 ) . substr( $license_key, -4 );
+                                } elseif ( $key_length > 4 ) {
+                                    $masked_key = substr( $license_key, 0, 2 ) . str_repeat( '•', $key_length - 2 );
+                                } else {
+                                    $masked_key = str_repeat( '•', $key_length );
+                                }
+                                echo esc_html( $masked_key );
+                                ?>
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="wns-activation-notice">
+                        <span class="dashicons dashicons-warning"></span>
+                        <?php
+                        printf(
+                            esc_html__( 'This domain (%s) is not yet activated. Click the button below to activate.', 'woo-nalda-sync' ),
+                            '<strong>' . esc_html( wns_get_domain() ) . '</strong>'
+                        );
+                        ?>
+                    </p>
+
+                    <div class="wns-license-actions">
+                        <button type="button" id="wns-activate-domain" class="wns-btn wns-btn-primary wns-btn-lg">
+                            <span class="dashicons dashicons-yes"></span>
+                            <?php esc_html_e( 'Activate on This Domain', 'woo-nalda-sync' ); ?>
+                        </button>
+                        <button type="button" id="wns-deactivate-license" class="wns-btn wns-btn-secondary">
+                            <span class="dashicons dashicons-dismiss"></span>
+                            <?php esc_html_e( 'Use Different License', 'woo-nalda-sync' ); ?>
+                        </button>
+                    </div>
+
+                <?php elseif ( $is_invalid && $has_license ) : ?>
+                    <!-- License is invalid/expired -->
+                    <div class="wns-license-key-display">
+                        <label class="wns-label"><?php esc_html_e( 'Current License Key', 'woo-nalda-sync' ); ?></label>
+                        <div class="wns-license-key-masked">
+                            <span class="wns-key-value">
+                                <?php
+                                $key_length = strlen( $license_key );
+                                if ( $key_length > 8 ) {
+                                    $masked_key = substr( $license_key, 0, 4 ) . str_repeat( '•', $key_length - 8 ) . substr( $license_key, -4 );
+                                } elseif ( $key_length > 4 ) {
+                                    $masked_key = substr( $license_key, 0, 2 ) . str_repeat( '•', $key_length - 2 );
+                                } else {
+                                    $masked_key = str_repeat( '•', $key_length );
+                                }
+                                echo esc_html( $masked_key );
+                                ?>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="wns-license-actions">
+                        <button type="button" id="wns-check-license" class="wns-btn wns-btn-secondary">
+                            <span class="dashicons dashicons-update"></span>
+                            <?php esc_html_e( 'Re-check License', 'woo-nalda-sync' ); ?>
+                        </button>
+                        <button type="button" id="wns-deactivate-license" class="wns-btn wns-btn-danger">
+                            <span class="dashicons dashicons-dismiss"></span>
+                            <?php esc_html_e( 'Remove License', 'woo-nalda-sync' ); ?>
+                        </button>
+                    </div>
+
+                    <p class="wns-help-text wns-muted">
+                        <?php
+                        if ( 'expired' === $api_status ) {
+                            printf(
+                                esc_html__( 'Your license has expired. %s to continue receiving updates and support.', 'woo-nalda-sync' ),
+                                '<a href="https://3ag.app/dashboard/licenses" target="_blank">' . esc_html__( 'Renew your license', 'woo-nalda-sync' ) . '</a>'
+                            );
+                        } else {
+                            esc_html_e( 'If you believe this is an error, try re-checking your license or contact support.', 'woo-nalda-sync' );
+                        }
+                        ?>
+                    </p>
+
                 <?php else : ?>
                     <!-- License Activation Form -->
                     <form id="wns-license-form" class="wns-form">
@@ -168,10 +319,10 @@ $package      = isset( $license_data['package'] ) ? $license_data['package'] : '
                                 <span class="wns-required">*</span>
                             </label>
                             <div class="wns-input-group">
-                                <input type="text" 
-                                       id="wns-license-key" 
-                                       name="license_key" 
-                                       value="" 
+                                <input type="text"
+                                       id="wns-license-key"
+                                       name="license_key"
+                                       value=""
                                        class="wns-input wns-input-lg wns-input-mono"
                                        placeholder="XXXX-XXXX-XXXX-XXXX"
                                        autocomplete="off">
