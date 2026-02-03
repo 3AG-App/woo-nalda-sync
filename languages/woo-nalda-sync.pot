@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0+.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Nalda Marketplace Sync 1.0.6\n"
+"Project-Id-Version: WooCommerce Nalda Marketplace Sync 1.0.7\n"
 "Report-Msgid-Bugs-To: https://3ag.app/support\n"
 "POT-Creation-Date: 2024-01-01 00:00:00+00:00\n"
 "MIME-Version: 1.0\n"
