@@ -320,7 +320,7 @@ class WNS_Order_Import {
     /**
      * Update existing order with latest data from Nalda
      *
-     * Currently updates: payout status, payment status
+     * Currently updates: payout status, payment status, and re-links unlinked products
      *
      * @param WC_Order $order      Existing WooCommerce order.
      * @param array    $order_data Order data from Nalda.
@@ -375,12 +375,76 @@ class WNS_Order_Import {
             $updated = true;
         }
 
+        // Try to re-link unlinked products
+        $relinked_products = $this->relink_unlinked_products( $order );
+        if ( $relinked_products > 0 ) {
+            $updated = true;
+        }
+
         if ( $updated ) {
             $order->update_meta_data( '_nalda_last_sync', current_time( 'mysql' ) );
             $order->save();
         }
 
         return $updated;
+    }
+
+    /**
+     * Re-link unlinked products in an order
+     *
+     * Attempts to find and link products that were not found during initial import.
+     *
+     * @param WC_Order $order WooCommerce order.
+     * @return int Number of products re-linked.
+     */
+    private function relink_unlinked_products( $order ) {
+        $relinked = 0;
+
+        foreach ( $order->get_items() as $item_id => $item ) {
+            // Skip if already linked to a product
+            if ( $item->get_product_id() > 0 ) {
+                continue;
+            }
+
+            // Get GTIN from item meta
+            $gtin = $item->get_meta( '_nalda_gtin' );
+            if ( empty( $gtin ) ) {
+                continue;
+            }
+
+            // Try to find the product
+            $product = $this->find_product_by_gtin( $gtin );
+            if ( ! $product ) {
+                continue;
+            }
+
+            // Link the product to the order item
+            $item->set_product_id( $product->get_id() );
+            
+            // Set variation ID if it's a variation
+            if ( $product->is_type( 'variation' ) ) {
+                $item->set_variation_id( $product->get_id() );
+                $item->set_product_id( $product->get_parent_id() );
+            }
+
+            // Update item name to match product
+            $item->set_name( $product->get_name() );
+
+            $item->save();
+
+            $order->add_order_note(
+                sprintf(
+                    /* translators: 1: Product name, 2: GTIN */
+                    __( 'Product re-linked: %1$s (GTIN: %2$s)', 'woo-nalda-sync' ),
+                    $product->get_name(),
+                    $gtin
+                )
+            );
+
+            $relinked++;
+        }
+
+        return $relinked;
     }
 
     /**
@@ -591,7 +655,37 @@ class WNS_Order_Import {
             return null;
         }
 
-        // Search in common GTIN meta fields (excluding _global_unique_id which is internal)
+        // Normalize GTIN - remove any whitespace and leading zeros for comparison
+        $gtin_normalized = ltrim( trim( $gtin ), '0' );
+
+        // WooCommerce 8.4+ has native GTIN support via global_unique_id
+        // Search using the native field first
+        $products = wc_get_products(
+            array(
+                'global_unique_id' => $gtin,
+                'limit'            => 1,
+            )
+        );
+
+        if ( ! empty( $products ) ) {
+            return $products[0];
+        }
+
+        // Try normalized GTIN (without leading zeros)
+        if ( $gtin !== $gtin_normalized ) {
+            $products = wc_get_products(
+                array(
+                    'global_unique_id' => $gtin_normalized,
+                    'limit'            => 1,
+                )
+            );
+
+            if ( ! empty( $products ) ) {
+                return $products[0];
+            }
+        }
+
+        // Search in common GTIN meta fields
         $gtin_fields = array( '_gtin', '_ean', '_barcode', 'gtin', 'ean', 'barcode' );
 
         foreach ( $gtin_fields as $field ) {
@@ -606,12 +700,35 @@ class WNS_Order_Import {
             if ( ! empty( $products ) ) {
                 return $products[0];
             }
+
+            // Also try normalized GTIN
+            if ( $gtin !== $gtin_normalized ) {
+                $products = wc_get_products(
+                    array(
+                        'meta_key'   => $field,
+                        'meta_value' => $gtin_normalized,
+                        'limit'      => 1,
+                    )
+                );
+
+                if ( ! empty( $products ) ) {
+                    return $products[0];
+                }
+            }
         }
 
         // Search by SKU (in case GTIN is used as SKU)
         $product_id = wc_get_product_id_by_sku( $gtin );
         if ( $product_id ) {
             return wc_get_product( $product_id );
+        }
+
+        // Try normalized SKU search
+        if ( $gtin !== $gtin_normalized ) {
+            $product_id = wc_get_product_id_by_sku( $gtin_normalized );
+            if ( $product_id ) {
+                return wc_get_product( $product_id );
+            }
         }
 
         return null;
