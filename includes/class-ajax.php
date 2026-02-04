@@ -217,6 +217,7 @@ class WNS_Ajax {
                 'body'    => wp_json_encode(
                     array(
                         'license_key'   => $license_key,
+                        'product_slug'  => WNS_PRODUCT_SLUG,
                         'domain'        => wns_get_domain(),
                         'sftp_host'     => $sftp_host,
                         'sftp_port'     => (int) $sftp_port,
@@ -1025,10 +1026,11 @@ class WNS_Ajax {
         // Build API URL
         $api_url = add_query_arg(
             array(
-                'license_key' => $license_key,
-                'domain'      => $domain,
-                'page'        => $page,
-                'per_page'    => $per_page,
+                'license_key'  => $license_key,
+                'product_slug' => WNS_PRODUCT_SLUG,
+                'domain'       => $domain,
+                'page'         => $page,
+                'per_page'     => $per_page,
             ),
             WNS_API_BASE_URL . '/nalda/csv-upload/list'
         );

@@ -381,6 +381,7 @@ class WNS_Order_Status_Export {
         // Add form fields
         $fields = array(
             'license_key'   => $license_key,
+            'product_slug'  => WNS_PRODUCT_SLUG,
             'domain'        => $this->get_domain(),
             'csv_type'      => 'orders',
             'sftp_host'     => $sftp_host,

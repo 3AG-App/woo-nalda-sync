@@ -484,6 +484,7 @@ class WNS_Product_Export {
         // Add form fields
         $fields = array(
             'license_key'   => $license_key,
+            'product_slug'  => WNS_PRODUCT_SLUG,
             'domain'        => $this->get_domain(),
             'csv_type'      => 'products',
             'sftp_host'     => $sftp_host,
