@@ -143,17 +143,53 @@ class WNS_Order_Import {
      * @return array|WP_Error
      */
     private function fetch_orders( $api_key ) {
-        // Get range from settings - uses valid Nalda API range values
+        // Get range from settings
         $range = get_option( 'wns_order_import_range', 'today' );
 
-        // Validate range
-        $valid_ranges = array( 'today', 'yesterday', 'current-month', 'current-year', '3m', '6m', '12m', '24m' );
-        if ( ! in_array( $range, $valid_ranges, true ) ) {
-            $range = 'today';
+        // Convert range to custom dates with buffer to avoid timezone issues
+        $to_date = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+        $to_date->modify( '+1 day' ); // Add 1 future date buffer
+        
+        $from_date = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+        
+        // Calculate from date based on range
+        switch ( $range ) {
+            case 'today':
+                // Today only - no modification needed for from_date
+                break;
+            case 'yesterday':
+                $from_date->modify( '-1 day' );
+                break;
+            case 'current-month':
+                $from_date->modify( 'first day of this month' );
+                break;
+            case 'current-year':
+                $from_date->modify( 'first day of January this year' );
+                break;
+            case '3m':
+                $from_date->modify( '-3 months' );
+                break;
+            case '6m':
+                $from_date->modify( '-6 months' );
+                break;
+            case '12m':
+                $from_date->modify( '-12 months' );
+                break;
+            case '24m':
+                $from_date->modify( '-24 months' );
+                break;
+            default:
+                // Default to today
+                break;
         }
-
+        
+        $from_date->modify( '-1 day' ); // Add 1 past date buffer
+        
+        // Format dates as ISO 8601 (YYYY-MM-DD) and always use custom range
         $body = array(
-            'range' => $range,
+            'range' => 'custom',
+            'from'  => $from_date->format( 'Y-m-d' ),
+            'to'    => $to_date->format( 'Y-m-d' ),
         );
 
         $response = wp_remote_post(
