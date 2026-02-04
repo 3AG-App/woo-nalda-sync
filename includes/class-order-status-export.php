@@ -16,18 +16,18 @@ if ( ! defined( 'WPINC' ) ) {
 class WNS_Order_Status_Export {
 
     /**
-     * WooCommerce to Nalda status mapping
+     * Valid Nalda states
      *
      * @var array
      */
-    private $status_mapping = array(
-        'pending'    => 'IN_PREPARATION',
-        'processing' => 'IN_PREPARATION',
-        'on-hold'    => 'IN_PREPARATION',
-        'completed'  => 'DELIVERED',
-        'cancelled'  => 'CANCELLED',
-        'refunded'   => 'RETURNED',
-        'failed'     => 'DISPUTE',
+    private $valid_states = array(
+        'IN_PREPARATION',
+        'READY_TO_COLLECT',
+        'IN_DELIVERY',
+        'DELIVERED',
+        'CANCELLED',
+        'RETURNED',
+        'DISPUTE',
     );
 
     /**
@@ -192,19 +192,38 @@ class WNS_Order_Status_Export {
         $rows = array();
 
         $nalda_order_id = $order->get_meta( '_nalda_order_id' );
-        $wc_status      = $order->get_status();
-        $nalda_status   = $this->get_nalda_status( $wc_status );
-
-        // Get expected delivery date (estimated from order date + delivery days)
-        $delivery_days = get_option( 'wns_default_delivery_days', '5' );
-        $order_date    = $order->get_date_created();
         
-        if ( $order_date ) {
-            $expected_delivery = clone $order_date;
-            $expected_delivery->modify( "+{$delivery_days} days" );
-            $expected_delivery_str = $expected_delivery->format( 'd.m.y' );
-        } else {
-            $expected_delivery_str = gmdate( 'd.m.y', strtotime( "+{$delivery_days} days" ) );
+        // Get the Nalda state directly from order meta (set in Delivery Information)
+        $nalda_status = $order->get_meta( '_nalda_state' );
+        
+        // Skip orders without a Nalda state set
+        if ( empty( $nalda_status ) ) {
+            return $rows;
+        }
+        
+        // Validate the state is a valid Nalda state
+        if ( ! in_array( strtoupper( $nalda_status ), $this->valid_states, true ) ) {
+            return $rows;
+        }
+        
+        // Ensure uppercase
+        $nalda_status = strtoupper( $nalda_status );
+
+        // Get expected delivery date from order meta first, then fallback to calculation
+        $expected_delivery_str = $order->get_meta( '_nalda_expected_delivery_date' );
+        
+        if ( empty( $expected_delivery_str ) ) {
+            // Fallback: calculate from order date + delivery days
+            $delivery_days = get_option( 'wns_default_delivery_days', '5' );
+            $order_date    = $order->get_date_created();
+            
+            if ( $order_date ) {
+                $expected_delivery = clone $order_date;
+                $expected_delivery->modify( "+{$delivery_days} days" );
+                $expected_delivery_str = $expected_delivery->format( 'd.m.y' );
+            } else {
+                $expected_delivery_str = gmdate( 'd.m.y', strtotime( "+{$delivery_days} days" ) );
+            }
         }
 
         // Get tracking code if available
@@ -239,18 +258,19 @@ class WNS_Order_Status_Export {
     }
 
     /**
-     * Get Nalda status from WooCommerce status
+     * Check if order has valid Nalda state for export
      *
-     * @param string $wc_status WooCommerce status.
-     * @return string
+     * @param WC_Order $order Order object.
+     * @return bool
      */
-    private function get_nalda_status( $wc_status ) {
-        // Handle custom shipped/in-transit status if available
-        if ( in_array( $wc_status, array( 'shipped', 'in-transit' ), true ) ) {
-            return 'IN_DELIVERY';
+    private function has_valid_nalda_state( $order ) {
+        $nalda_state = $order->get_meta( '_nalda_state' );
+        
+        if ( empty( $nalda_state ) ) {
+            return false;
         }
-
-        return isset( $this->status_mapping[ $wc_status ] ) ? $this->status_mapping[ $wc_status ] : 'IN_PREPARATION';
+        
+        return in_array( strtoupper( $nalda_state ), $this->valid_states, true );
     }
 
     /**
