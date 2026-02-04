@@ -407,7 +407,9 @@ class WNS_Order_Status_Export {
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( 200 !== $code && 201 !== $code ) {
-            $message = isset( $body['message'] ) ? $body['message'] : __( 'CSV upload failed.', 'woo-nalda-sync' );
+            $api_message = isset( $body['message'] ) ? $body['message'] : __( 'Unknown error', 'woo-nalda-sync' );
+            /* translators: 1: HTTP response code, 2: Error message from API */
+            $message = sprintf( __( 'CSV upload failed. Response code: %1$d. Message: %2$s', 'woo-nalda-sync' ), $code, $api_message );
             return new WP_Error( 'upload_failed', $message );
         }
 
