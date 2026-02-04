@@ -210,9 +210,18 @@ class WNS_Order_Status_Export {
         $nalda_status = strtoupper( $nalda_status );
 
         // Get expected delivery date from order meta first, then fallback to calculation
-        $expected_delivery_str = $order->get_meta( '_nalda_expected_delivery_date' );
+        $expected_delivery_meta = $order->get_meta( '_nalda_expected_delivery_date' );
         
-        if ( empty( $expected_delivery_str ) ) {
+        if ( ! empty( $expected_delivery_meta ) ) {
+            // Convert meta value to dd.mm.yy format
+            $timestamp = strtotime( $expected_delivery_meta );
+            if ( $timestamp ) {
+                $expected_delivery_str = gmdate( 'd.m.y', $timestamp );
+            } else {
+                // If parsing fails, use the value as-is (might already be in correct format)
+                $expected_delivery_str = $expected_delivery_meta;
+            }
+        } else {
             // Fallback: calculate from order date + delivery days
             $delivery_days = get_option( 'wns_default_delivery_days', '5' );
             $order_date    = $order->get_date_created();
