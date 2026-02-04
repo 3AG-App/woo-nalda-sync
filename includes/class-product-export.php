@@ -276,7 +276,7 @@ class WNS_Product_Export {
         $csv = stream_get_contents( $output );
         fclose( $output );
 
-        $filename = 'products_' . gmdate( 'Y-m-d_H-i-s' ) . '.csv';
+        $filename = 'products_' . gmdate( 'Y-m-d' ) . '.csv';
 
         return array(
             'csv'      => $csv,

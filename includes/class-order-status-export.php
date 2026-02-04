@@ -171,7 +171,7 @@ class WNS_Order_Status_Export {
         $csv = stream_get_contents( $output );
         fclose( $output );
 
-        $filename = 'order_status_' . gmdate( 'Y-m-d_H-i-s' ) . '.csv';
+        $filename = 'order_status_' . gmdate( 'Y-m-d' ) . '.csv';
 
         return array(
             'csv'      => $csv,
