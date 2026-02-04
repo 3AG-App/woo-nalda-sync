@@ -242,19 +242,22 @@ class WNS_Admin {
             return '';
         }
 
+        // WooCommerce 8.4+ has native GTIN support - check first to avoid deprecated meta access
+        if ( method_exists( $product, 'get_global_unique_id' ) ) {
+            $gtin = $product->get_global_unique_id();
+            if ( ! empty( $gtin ) ) {
+                return $gtin;
+            }
+        }
+
         // Check common GTIN meta fields
-        $gtin_fields = array( '_gtin', '_ean', '_barcode', 'gtin', 'ean', 'barcode', '_global_unique_id' );
+        $gtin_fields = array( '_gtin', '_ean', '_barcode', 'gtin', 'ean', 'barcode' );
 
         foreach ( $gtin_fields as $field ) {
             $gtin = $product->get_meta( $field );
             if ( ! empty( $gtin ) ) {
                 return $gtin;
             }
-        }
-
-        // WooCommerce 8.4+ has native GTIN support
-        if ( method_exists( $product, 'get_global_unique_id' ) ) {
-            return $product->get_global_unique_id();
         }
 
         return '';

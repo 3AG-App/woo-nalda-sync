@@ -555,8 +555,8 @@ class WNS_Order_Import {
             return null;
         }
 
-        // Search in common GTIN meta fields
-        $gtin_fields = array( '_gtin', '_ean', '_barcode', 'gtin', 'ean', 'barcode', '_global_unique_id' );
+        // Search in common GTIN meta fields (excluding _global_unique_id which is internal)
+        $gtin_fields = array( '_gtin', '_ean', '_barcode', 'gtin', 'ean', 'barcode' );
 
         foreach ( $gtin_fields as $field ) {
             $products = wc_get_products(
