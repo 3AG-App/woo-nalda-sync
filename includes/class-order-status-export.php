@@ -34,29 +34,7 @@ class WNS_Order_Status_Export {
      * Constructor
      */
     public function __construct() {
-        // Track order status changes
-        add_action( 'woocommerce_order_status_changed', array( $this, 'track_status_change' ), 10, 4 );
-    }
-
-    /**
-     * Track order status changes for Nalda orders
-     *
-     * @param int      $order_id Order ID.
-     * @param string   $old_status Old status.
-     * @param string   $new_status New status.
-     * @param WC_Order $order Order object.
-     */
-    public function track_status_change( $order_id, $old_status, $new_status, $order ) {
-        // Check if this is a Nalda order
-        $nalda_order = $order->get_meta( '_nalda_order' );
-        if ( 'yes' !== $nalda_order ) {
-            return;
-        }
-
-        // Mark as needing export
-        $order->update_meta_data( '_nalda_status_needs_export', 'yes' );
-        $order->update_meta_data( '_nalda_last_wc_status', $new_status );
-        $order->save();
+        // No hooks needed - we export all Nalda orders from last 60 days
     }
 
     /**
@@ -120,13 +98,6 @@ class WNS_Order_Status_Export {
             return $result;
         }
 
-        // Mark orders as exported
-        foreach ( $orders as $order ) {
-            $order->update_meta_data( '_nalda_status_needs_export', 'no' );
-            $order->update_meta_data( '_nalda_last_status_export', time() );
-            $order->save();
-        }
-
         $stats = array(
             'total'    => count( $orders ),
             'exported' => $csv_data['exported'],
@@ -145,33 +116,18 @@ class WNS_Order_Status_Export {
     }
 
     /**
-     * Get orders to export
+     * Get orders to export (all Nalda orders from last 60 days)
      *
      * @return array
      */
     private function get_orders_to_export() {
         $args = array(
             'limit'      => -1,
-            'orderby'    => 'ID',
-            'order'      => 'ASC',
-            'meta_query' => array(
-                'relation' => 'AND',
-                array(
-                    'key'   => '_nalda_order',
-                    'value' => 'yes',
-                ),
-                array(
-                    'relation' => 'OR',
-                    array(
-                        'key'   => '_nalda_status_needs_export',
-                        'value' => 'yes',
-                    ),
-                    array(
-                        'key'     => '_nalda_status_needs_export',
-                        'compare' => 'NOT EXISTS',
-                    ),
-                ),
-            ),
+            'orderby'    => 'date',
+            'order'      => 'DESC',
+            'date_after' => gmdate( 'Y-m-d', strtotime( '-60 days' ) ),
+            'meta_key'   => '_nalda_order_id',
+            'meta_compare' => 'EXISTS',
         );
 
         return wc_get_orders( $args );
