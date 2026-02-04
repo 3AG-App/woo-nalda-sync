@@ -289,7 +289,13 @@ class WNS_Order_Status_Export {
      * @return string
      */
     private function get_tracking_code( $order ) {
-        // Check common tracking meta fields
+        // First check our own Nalda tracking code field
+        $nalda_tracking = $order->get_meta( '_nalda_tracking_code' );
+        if ( ! empty( $nalda_tracking ) ) {
+            return $nalda_tracking;
+        }
+
+        // Check common tracking meta fields from other plugins
         $tracking_fields = array(
             '_tracking_number',
             '_wc_shipment_tracking_items',
