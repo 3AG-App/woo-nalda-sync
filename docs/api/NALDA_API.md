@@ -10,9 +10,10 @@ This API allows the Nalda plugin to upload CSV files to the Nalda SFTP server an
 
 All Nalda API endpoints require:
 - A valid `license_key`
+- A `product_slug` that matches the product the license is for
 - A `domain` that is currently activated for the license
 
-The API validates that the license is active and the domain has a valid activation before processing requests.
+The API validates that the license is active, belongs to the specified product, and the domain has a valid activation before processing requests.
 
 ---
 
@@ -41,6 +42,7 @@ Uploads a CSV file to the Nalda SFTP server. The file is also backed up to cloud
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `license_key` | string | Yes | The license key |
+| `product_slug` | string | Yes | The product slug the license belongs to |
 | `domain` | string | Yes | The activated domain making the request |
 | `csv_type` | string | Yes | Type of CSV: `orders` or `products` |
 | `sftp_host` | string | Yes | SFTP hostname (must be `*.nalda.com`) |
@@ -62,6 +64,7 @@ Uploads a CSV file to the Nalda SFTP server. The file is also backed up to cloud
 curl -X POST "https://3ag.app/api/v3/nalda/csv-upload" \
   -H "Accept: application/json" \
   -F "license_key=XXXX-XXXX-XXXX-XXXX" \
+  -F "product_slug=nalda" \
   -F "domain=mystore.com" \
   -F "csv_type=orders" \
   -F "sftp_host=ftp.nalda.com" \
@@ -89,8 +92,8 @@ curl -X POST "https://3ag.app/api/v3/nalda/csv-upload" \
 
 | Status | Message | Description |
 |--------|---------|-------------|
-| 400 | `License key and domain are required.` | Missing required auth fields |
-| 401 | `Invalid license key.` | License key not found |
+| 400 | `License key, domain, and product slug are required.` | Missing required auth fields |
+| 401 | `Invalid license key.` | License key not found or doesn't match product |
 | 403 | `License is not active.` | License is suspended or cancelled |
 | 403 | `License has expired.` | License expiration date has passed |
 | 403 | `License is not activated on this domain.` | Domain not activated |
@@ -110,6 +113,7 @@ Retrieves a paginated list of previous CSV uploads for the current license and d
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `license_key` | string | Yes | The license key |
+| `product_slug` | string | Yes | The product slug the license belongs to |
 | `domain` | string | Yes | The activated domain |
 | `type` | string | No | Filter by CSV type: `orders` or `products` |
 | `per_page` | integer | No | Results per page (1-100, default: 15) |
@@ -118,7 +122,7 @@ Retrieves a paginated list of previous CSV uploads for the current license and d
 **Example Request:**
 
 ```
-GET /api/v3/nalda/csv-upload/list?license_key=XXXX-XXXX-XXXX-XXXX&domain=mystore.com&type=products&per_page=10&page=1
+GET /api/v3/nalda/csv-upload/list?license_key=XXXX-XXXX-XXXX-XXXX&product_slug=nalda&domain=mystore.com&type=products&per_page=10&page=1
 ```
 
 **Success Response (200):**
@@ -169,8 +173,8 @@ GET /api/v3/nalda/csv-upload/list?license_key=XXXX-XXXX-XXXX-XXXX&domain=mystore
 
 | Status | Message | Description |
 |--------|---------|-------------|
-| 400 | `License key and domain are required.` | Missing required auth fields |
-| 401 | `Invalid license key.` | License key not found |
+| 400 | `License key, domain, and product slug are required.` | Missing required auth fields |
+| 401 | `Invalid license key.` | License key not found or doesn't match product |
 | 403 | `License is not active.` | License is suspended or cancelled |
 | 403 | `License has expired.` | License expiration date has passed |
 | 403 | `License is not activated on this domain.` | Domain not activated |
@@ -189,6 +193,7 @@ Tests SFTP connection without uploading a file. Use this to verify credentials b
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `license_key` | string | Yes | The license key |
+| `product_slug` | string | Yes | The product slug the license belongs to |
 | `domain` | string | Yes | The activated domain |
 | `sftp_host` | string | Yes | SFTP hostname (must be `*.nalda.com`) |
 | `sftp_port` | integer | No | SFTP port (default: `2022`) |
@@ -200,6 +205,7 @@ Tests SFTP connection without uploading a file. Use this to verify credentials b
 ```json
 {
   "license_key": "XXXX-XXXX-XXXX-XXXX",
+  "product_slug": "nalda",
   "domain": "mystore.com",
   "sftp_host": "ftp.nalda.com",
   "sftp_port": 2022,
@@ -220,8 +226,8 @@ Tests SFTP connection without uploading a file. Use this to verify credentials b
 
 | Status | Message | Description |
 |--------|---------|-------------|
-| 400 | `License key and domain are required.` | Missing required auth fields |
-| 401 | `Invalid license key.` | License key not found |
+| 400 | `License key, domain, and product slug are required.` | Missing required auth fields |
+| 401 | `Invalid license key.` | License key not found or doesn't match product |
 | 403 | `License is not active.` | License is suspended or cancelled |
 | 403 | `License has expired.` | License expiration date has passed |
 | 403 | `License is not activated on this domain.` | Domain not activated |
