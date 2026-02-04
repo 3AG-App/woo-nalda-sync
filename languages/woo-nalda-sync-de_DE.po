@@ -745,6 +745,26 @@ msgid "Delivery Note #%s"
 msgstr "Lieferschein #%s"
 
 #: includes/class-delivery-note-pdf.php
+msgid "Language"
+msgstr "Sprache"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Print / Save as PDF"
+msgstr "Drucken / Als PDF speichern"
+
+#: includes/class-delivery-note-pdf.php
+msgid "Order"
+msgstr "Bestellung"
+
+#: includes/class-delivery-note-pdf.php
+msgid "No"
+msgstr "Nr."
+
+#: includes/class-delivery-note-pdf.php
+msgid "N/A"
+msgstr "N/A"
+
+#: includes/class-delivery-note-pdf.php
 msgid "Seller"
 msgstr "Verkäufer"
 

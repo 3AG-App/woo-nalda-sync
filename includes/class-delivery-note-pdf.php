@@ -56,9 +56,16 @@ class WNS_Delivery_Note_PDF {
         // Switch locale for translations.
         switch_to_locale( $locale );
         
-        // Reload text domain for the new locale.
+        // Unload current text domain.
         unload_textdomain( 'woo-nalda-sync' );
-        load_plugin_textdomain( 'woo-nalda-sync', false, dirname( plugin_basename( WNS_PLUGIN_FILE ) ) . '/languages' );
+        
+        // Directly load the .mo file for the specific locale.
+        // This is more reliable in AJAX context than load_plugin_textdomain().
+        $mofile = WNS_PLUGIN_DIR . 'languages/woo-nalda-sync-' . $locale . '.mo';
+        
+        if ( file_exists( $mofile ) ) {
+            load_textdomain( 'woo-nalda-sync', $mofile );
+        }
     }
 
     /**
