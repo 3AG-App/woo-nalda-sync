@@ -56,9 +56,19 @@ class WNS_Delivery_Note_PDF {
         // Switch locale for translations.
         switch_to_locale( $locale );
         
-        // Reload text domain for the new locale.
+        // Unload current text domain.
         unload_textdomain( 'woo-nalda-sync' );
-        load_plugin_textdomain( 'woo-nalda-sync', false, dirname( WNS_PLUGIN_BASENAME ) . '/languages' );
+        
+        // Load the text domain with the new locale.
+        // We need to manually load the .mo file for the specific locale.
+        $mofile = WNS_PLUGIN_DIR . 'languages/woo-nalda-sync-' . $locale . '.mo';
+        
+        if ( file_exists( $mofile ) ) {
+            load_textdomain( 'woo-nalda-sync', $mofile );
+        } else {
+            // Fallback: Try loading via standard WordPress mechanism.
+            load_plugin_textdomain( 'woo-nalda-sync', false, dirname( plugin_basename( WNS_PLUGIN_FILE ) ) . '/languages' );
+        }
     }
 
     /**
