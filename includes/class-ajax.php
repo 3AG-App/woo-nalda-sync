@@ -126,6 +126,9 @@ class WNS_Ajax {
         if ( isset( $_POST['product_default_behavior'] ) ) {
             update_option( 'wns_product_default_behavior', sanitize_text_field( wp_unslash( $_POST['product_default_behavior'] ) ) );
         }
+        // Save product export enabled checkbox
+        $product_export_enabled = isset( $_POST['product_export_enabled'] ) && filter_var( wp_unslash( $_POST['product_export_enabled'] ), FILTER_VALIDATE_BOOLEAN );
+        update_option( 'wns_product_export_enabled', $product_export_enabled );
 
         // Order import settings
         if ( isset( $_POST['order_import_interval'] ) ) {
@@ -139,11 +142,17 @@ class WNS_Ajax {
                 update_option( 'wns_order_import_range', $range );
             }
         }
+        // Save order import enabled checkbox
+        $order_import_enabled = isset( $_POST['order_import_enabled'] ) && filter_var( wp_unslash( $_POST['order_import_enabled'] ), FILTER_VALIDATE_BOOLEAN );
+        update_option( 'wns_order_import_enabled', $order_import_enabled );
 
         // Order status export settings
         if ( isset( $_POST['order_status_export_interval'] ) ) {
             update_option( 'wns_order_status_export_interval', sanitize_text_field( wp_unslash( $_POST['order_status_export_interval'] ) ) );
         }
+        // Save order status export enabled checkbox
+        $order_status_export_enabled = isset( $_POST['order_status_export_enabled'] ) && filter_var( wp_unslash( $_POST['order_status_export_enabled'] ), FILTER_VALIDATE_BOOLEAN );
+        update_option( 'wns_order_status_export_enabled', $order_status_export_enabled );
 
         // Product default settings (country and currency are taken from WooCommerce settings)
         if ( isset( $_POST['default_delivery_days'] ) ) {
