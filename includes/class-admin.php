@@ -519,7 +519,7 @@ class WNS_Admin {
         $original_total  = floatval( $order->get_meta( '_nalda_original_total' ) );
         $payout_status   = $order->get_meta( '_nalda_payout_status' );
         $created_at      = $order->get_meta( '_nalda_created_at' );
-        $nalda_state     = $order->get_meta( '_nalda_state' );
+        $nalda_delivery_status = $order->get_meta( '_nalda_delivery_status' );
         $expected_date   = $order->get_meta( '_nalda_expected_delivery_date' );
         $tracking_code   = $order->get_meta( '_nalda_tracking_code' );
         $end_customer_email = $order->get_meta( '_nalda_end_customer_email' );
@@ -628,9 +628,9 @@ class WNS_Admin {
             <?php
             wp_nonce_field( 'wns_nalda_order_meta', 'wns_nalda_order_nonce' );
 
-            // Available Nalda states
+            // Available Nalda delivery statuses
             $nalda_states = array(
-                ''                 => __( '— Select State —', 'woo-nalda-sync' ),
+                ''                 => __( '— Select Delivery Status —', 'woo-nalda-sync' ),
                 'IN_PREPARATION'   => __( 'In Preparation', 'woo-nalda-sync' ),
                 'READY_TO_COLLECT' => __( 'Ready to Collect', 'woo-nalda-sync' ),
                 'IN_DELIVERY'      => __( 'In Delivery', 'woo-nalda-sync' ),
@@ -642,10 +642,10 @@ class WNS_Admin {
             ?>
 
             <div class="wns-order-meta-row" style="flex-direction: column; gap: 4px;">
-                <label class="wns-order-meta-label" for="_nalda_state"><?php esc_html_e( 'State', 'woo-nalda-sync' ); ?></label>
-                <select name="_nalda_state" id="_nalda_state" style="width: 100%;">
+                <label class="wns-order-meta-label" for="_nalda_delivery_status"><?php esc_html_e( 'Delivery Status', 'woo-nalda-sync' ); ?></label>
+                <select name="_nalda_delivery_status" id="_nalda_delivery_status" style="width: 100%;">
                     <?php foreach ( $nalda_states as $value => $label ) : ?>
-                        <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $nalda_state, $value ); ?>>
+                        <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $nalda_delivery_status, $value ); ?>>
                             <?php echo esc_html( $label ); ?>
                         </option>
                     <?php endforeach; ?>
@@ -711,9 +711,9 @@ class WNS_Admin {
             return;
         }
 
-        // Save state
-        if ( isset( $_POST['_nalda_state'] ) ) {
-            $order->update_meta_data( '_nalda_state', sanitize_text_field( wp_unslash( $_POST['_nalda_state'] ) ) );
+        // Save delivery status
+        if ( isset( $_POST['_nalda_delivery_status'] ) ) {
+            $order->update_meta_data( '_nalda_delivery_status', sanitize_text_field( wp_unslash( $_POST['_nalda_delivery_status'] ) ) );
         }
 
         // Save expected delivery date
@@ -756,9 +756,9 @@ class WNS_Admin {
             return;
         }
 
-        // Save state
-        if ( isset( $_POST['_nalda_state'] ) ) {
-            $order->update_meta_data( '_nalda_state', sanitize_text_field( wp_unslash( $_POST['_nalda_state'] ) ) );
+        // Save delivery status
+        if ( isset( $_POST['_nalda_delivery_status'] ) ) {
+            $order->update_meta_data( '_nalda_delivery_status', sanitize_text_field( wp_unslash( $_POST['_nalda_delivery_status'] ) ) );
         }
 
         // Save expected delivery date

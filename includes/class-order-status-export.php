@@ -267,19 +267,19 @@ class WNS_Order_Status_Export {
     }
 
     /**
-     * Check if order has valid Nalda state for export
+     * Check if order has valid Nalda delivery status for export
      *
      * @param WC_Order $order Order object.
      * @return bool
      */
-    private function has_valid_nalda_state( $order ) {
-        $nalda_state = $order->get_meta( '_nalda_state' );
-        
-        if ( empty( $nalda_state ) ) {
+    private function has_valid_nalda_delivery_status( $order ) {
+        $nalda_status = $order->get_meta( '_nalda_delivery_status' );
+
+        if ( empty( $nalda_status ) ) {
             return false;
         }
-        
-        return in_array( strtoupper( $nalda_state ), $this->valid_states, true );
+
+        return in_array( strtoupper( $nalda_status ), $this->valid_states, true );
     }
 
     /**
