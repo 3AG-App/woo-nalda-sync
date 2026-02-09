@@ -6,7 +6,7 @@ Tested up to: 6.7
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 8.5
-Stable tag: 1.0.24
+Stable tag: 1.0.25
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,6 +89,10 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 6. Detailed sync logs
 
 == Changelog ==
+
+= 1.0.25 =
+* Added: Hidden debug page for fixing orders missing _nalda_order meta (access via /wp-admin/admin.php?page=wns-debug)
+* Fixed: Compatibility with orders imported by older plugin versions
 
 = 1.0.24 =
 * Added: Nalda delivery status column on WooCommerce orders list page

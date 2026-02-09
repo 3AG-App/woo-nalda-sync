@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Nalda Marketplace Sync
  * Plugin URI: https://3ag.app/products/woo-nalda-sync
  * Description: Sync WooCommerce products and orders with Nalda.com marketplace. Export products, import orders, and update order statuses.
- * Version: 1.0.24
+ * Version: 1.0.25
  * Author: 3AG
  * Author URI: https://3ag.app
  * Text Domain: woo-nalda-sync
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'WNS_VERSION', '1.0.24' );
+define( 'WNS_VERSION', '1.0.25' );
 define( 'WNS_PLUGIN_FILE', __FILE__ );
 define( 'WNS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WNS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

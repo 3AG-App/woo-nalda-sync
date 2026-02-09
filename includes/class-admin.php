@@ -238,6 +238,16 @@ class WNS_Admin {
             'wns-license',
             array( $this, 'render_license_page' )
         );
+
+        // Hidden debug page (no parent, accessible via direct URL only)
+        add_submenu_page(
+            null, // No parent = hidden from menu
+            __( 'Debug', 'woo-nalda-sync' ),
+            __( 'Debug', 'woo-nalda-sync' ),
+            'manage_woocommerce',
+            'wns-debug',
+            array( $this, 'render_debug_page' )
+        );
     }
 
     /**
@@ -575,6 +585,13 @@ class WNS_Admin {
      */
     public function render_history_page() {
         include WNS_PLUGIN_DIR . 'includes/views/history.php';
+    }
+
+    /**
+     * Render debug page
+     */
+    public function render_debug_page() {
+        include WNS_PLUGIN_DIR . 'includes/views/debug.php';
     }
 
     /**
