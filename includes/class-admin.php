@@ -26,6 +26,13 @@ class WNS_Admin {
         // Order list: append end-customer name for Nalda orders
         add_filter( 'woocommerce_admin_order_buyer_name', array( $this, 'append_nalda_customer_name_to_buyer_name' ), 10, 2 );
 
+        // Order list: Nalda delivery status column
+        add_filter( 'manage_edit-shop_order_columns', array( $this, 'add_order_delivery_status_column' ) );
+        add_action( 'manage_shop_order_posts_custom_column', array( $this, 'render_order_delivery_status_column' ), 10, 2 );
+        // For HPOS
+        add_filter( 'manage_woocommerce_page_wc-orders_columns', array( $this, 'add_order_delivery_status_column' ) );
+        add_action( 'manage_woocommerce_page_wc-orders_custom_column', array( $this, 'render_order_delivery_status_column_hpos' ), 10, 2 );
+
         // Product list column
         add_filter( 'manage_edit-product_columns', array( $this, 'add_product_column' ) );
         add_action( 'manage_product_posts_custom_column', array( $this, 'render_product_column' ), 10, 2 );
@@ -70,6 +77,107 @@ class WNS_Admin {
         }
 
         return 'Nalda (' . esc_html( $name ) . ')';
+    }
+
+    /**
+     * Add Nalda delivery status column to orders list
+     *
+     * @param array $columns Existing columns.
+     * @return array
+     */
+    public function add_order_delivery_status_column( $columns ) {
+        $new_columns = array();
+
+        foreach ( $columns as $key => $value ) {
+            $new_columns[ $key ] = $value;
+            // Add after order_status column
+            if ( 'order_status' === $key ) {
+                $new_columns['nalda_delivery_status'] = __( 'Nalda Status', 'woo-nalda-sync' );
+            }
+        }
+
+        return $new_columns;
+    }
+
+    /**
+     * Render Nalda delivery status column (legacy)
+     *
+     * @param string $column  Column name.
+     * @param int    $post_id Post ID.
+     */
+    public function render_order_delivery_status_column( $column, $post_id ) {
+        if ( 'nalda_delivery_status' !== $column ) {
+            return;
+        }
+
+        $order = wc_get_order( $post_id );
+        $this->output_delivery_status_badge( $order );
+    }
+
+    /**
+     * Render Nalda delivery status column (HPOS)
+     *
+     * @param string   $column Column name.
+     * @param WC_Order $order  Order object.
+     */
+    public function render_order_delivery_status_column_hpos( $column, $order ) {
+        if ( 'nalda_delivery_status' !== $column ) {
+            return;
+        }
+
+        $this->output_delivery_status_badge( $order );
+    }
+
+    /**
+     * Output delivery status badge HTML
+     *
+     * @param WC_Order|false $order Order object.
+     */
+    private function output_delivery_status_badge( $order ) {
+        if ( ! $order ) {
+            echo '—';
+            return;
+        }
+
+        // Only show for Nalda orders
+        if ( 'yes' !== $order->get_meta( '_nalda_order' ) ) {
+            echo '—';
+            return;
+        }
+
+        $delivery_status = $order->get_meta( '_nalda_delivery_status' );
+
+        if ( empty( $delivery_status ) ) {
+            echo '<span style="color: #999;">—</span>';
+            return;
+        }
+
+        // Status colors and labels
+        $status_config = array(
+            'IN_PREPARATION'   => array( 'label' => __( 'In Preparation', 'woo-nalda-sync' ), 'color' => '#f0ad4e', 'bg' => '#fef8e8' ),
+            'READY_TO_COLLECT' => array( 'label' => __( 'Ready to Collect', 'woo-nalda-sync' ), 'color' => '#5bc0de', 'bg' => '#e8f6fa' ),
+            'IN_DELIVERY'      => array( 'label' => __( 'In Delivery', 'woo-nalda-sync' ), 'color' => '#5bc0de', 'bg' => '#e8f6fa' ),
+            'DELIVERED'        => array( 'label' => __( 'Delivered', 'woo-nalda-sync' ), 'color' => '#5cb85c', 'bg' => '#eaf6ea' ),
+            'COLLECTED'        => array( 'label' => __( 'Collected', 'woo-nalda-sync' ), 'color' => '#5cb85c', 'bg' => '#eaf6ea' ),
+            'RETURNED'         => array( 'label' => __( 'Returned', 'woo-nalda-sync' ), 'color' => '#d9534f', 'bg' => '#fbeaea' ),
+            'CANCELLED'        => array( 'label' => __( 'Cancelled', 'woo-nalda-sync' ), 'color' => '#d9534f', 'bg' => '#fbeaea' ),
+            'UNDELIVERABLE'    => array( 'label' => __( 'Undeliverable', 'woo-nalda-sync' ), 'color' => '#d9534f', 'bg' => '#fbeaea' ),
+            'NOT_PICKED_UP'    => array( 'label' => __( 'Not Picked Up', 'woo-nalda-sync' ), 'color' => '#d9534f', 'bg' => '#fbeaea' ),
+            'DISPUTE'          => array( 'label' => __( 'Dispute', 'woo-nalda-sync' ), 'color' => '#d9534f', 'bg' => '#fbeaea' ),
+        );
+
+        $config = isset( $status_config[ $delivery_status ] ) ? $status_config[ $delivery_status ] : array(
+            'label' => ucfirst( str_replace( '_', ' ', strtolower( $delivery_status ) ) ),
+            'color' => '#666',
+            'bg'    => '#f0f0f0',
+        );
+
+        printf(
+            '<span style="display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500; color: %s; background: %s;">%s</span>',
+            esc_attr( $config['color'] ),
+            esc_attr( $config['bg'] ),
+            esc_html( $config['label'] )
+        );
     }
 
     /**
