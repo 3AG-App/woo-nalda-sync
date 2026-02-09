@@ -23,6 +23,9 @@ class WNS_Admin {
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
         add_filter( 'plugin_action_links_' . WNS_PLUGIN_BASENAME, array( $this, 'add_action_links' ) );
 
+        // Order list: append end-customer name for Nalda orders
+        add_filter( 'woocommerce_admin_order_buyer_name', array( $this, 'append_nalda_customer_name_to_buyer_name' ), 10, 2 );
+
         // Product list column
         add_filter( 'manage_edit-product_columns', array( $this, 'add_product_column' ) );
         add_action( 'manage_product_posts_custom_column', array( $this, 'render_product_column' ), 10, 2 );
@@ -40,6 +43,33 @@ class WNS_Admin {
         add_action( 'woocommerce_process_shop_order_meta', array( $this, 'save_nalda_order_meta' ), 10, 1 );
         // For HPOS
         add_action( 'woocommerce_before_order_object_save', array( $this, 'save_nalda_order_meta_hpos' ), 10, 1 );
+    }
+
+    /**
+     * Append end-customer name to buyer name in admin order list.
+     *
+     * @param string   $buyer_name Buyer name.
+     * @param WC_Order $order      Order object.
+     * @return string
+     */
+    public function append_nalda_customer_name_to_buyer_name( $buyer_name, $order ) {
+        if ( ! $order || ! is_a( $order, 'WC_Order' ) ) {
+            return $buyer_name;
+        }
+
+        if ( 'yes' !== $order->get_meta( '_nalda_order' ) ) {
+            return $buyer_name;
+        }
+
+        $first = $order->get_shipping_first_name();
+        $last  = $order->get_shipping_last_name();
+        $name  = trim( $first . ' ' . $last );
+
+        if ( empty( $name ) ) {
+            return $buyer_name;
+        }
+
+        return 'Nalda (' . esc_html( $name ) . ')';
     }
 
     /**
