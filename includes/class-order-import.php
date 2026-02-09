@@ -376,8 +376,9 @@ class WNS_Order_Import {
         }
 
         // Store Nalda delivery status only if it's not set (site is source of truth)
+        // Note: API returns 'status' field (lowercase like 'delivered'), we normalize to uppercase
         $current_delivery_status = $order->get_meta( '_nalda_delivery_status' );
-        $new_delivery_status     = $info['deliveryStatus'] ?? '';
+        $new_delivery_status     = isset( $info['status'] ) ? strtoupper( $info['status'] ) : '';
 
         if ( empty( $current_delivery_status ) && ! empty( $new_delivery_status ) ) {
             $order->update_meta_data( '_nalda_delivery_status', $new_delivery_status );
@@ -574,7 +575,8 @@ class WNS_Order_Import {
         $order->update_meta_data( '_nalda_created_at', $info['createdAt'] ?? '' );
 
         // Store delivery status for order status export
-        $delivery_status = $info['deliveryStatus'] ?? 'IN_PREPARATION';
+        // API returns 'status' field (lowercase like 'delivered'), we normalize to uppercase
+        $delivery_status = isset( $info['status'] ) ? strtoupper( $info['status'] ) : 'IN_PREPARATION';
         $order->update_meta_data( '_nalda_delivery_status', $delivery_status );
 
         // Store expected delivery date if available
