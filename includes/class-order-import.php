@@ -65,9 +65,9 @@ class WNS_Order_Import {
         }
 
         // Check if this is a Nalda order
-        $is_nalda_order = $order->get_meta( '_nalda_order' );
+        $nalda_order_id = $order->get_meta( '_nalda_order_id' );
 
-        if ( 'yes' === $is_nalda_order ) {
+        if ( ! empty( $nalda_order_id ) ) {
             // Nalda handles all customer communication
             return false;
         }
@@ -568,7 +568,6 @@ class WNS_Order_Import {
 
         // Set order meta
         $order->update_meta_data( '_nalda_order_id', $nalda_order_id );
-        $order->update_meta_data( '_nalda_order', 'yes' );
         $order->update_meta_data( '_nalda_total_commission', $total_commission );
         $order->update_meta_data( '_nalda_original_total', $total_price );
         $order->update_meta_data( '_nalda_payout_status', $info['payoutStatus'] ?? '' );

@@ -64,7 +64,8 @@ class WNS_Admin {
             return $buyer_name;
         }
 
-        if ( 'yes' !== $order->get_meta( '_nalda_order' ) ) {
+        $nalda_order_id = $order->get_meta( '_nalda_order_id' );
+        if ( empty( $nalda_order_id ) ) {
             return $buyer_name;
         }
 
@@ -140,7 +141,8 @@ class WNS_Admin {
         }
 
         // Only show for Nalda orders
-        if ( 'yes' !== $order->get_meta( '_nalda_order' ) ) {
+        $nalda_order_id = $order->get_meta( '_nalda_order_id' );
+        if ( empty( $nalda_order_id ) ) {
             echo '—';
             return;
         }
