@@ -499,10 +499,8 @@ class WNS_Order_Import {
 
             if ( $product ) {
                 $order_item_id = $order->add_product( $product, $quantity, array(
-                    'subtotal'     => $net_price * $quantity,
-                    'total'        => $net_price * $quantity,
-                    'subtotal_tax' => 0,
-                    'total_tax'    => 0,
+                    'subtotal' => $net_price * $quantity,
+                    'total'    => $net_price * $quantity,
                 ) );
 
                 // Store item metadata
@@ -520,9 +518,6 @@ class WNS_Order_Import {
                 $order_item->set_quantity( $quantity );
                 $order_item->set_subtotal( $net_price * $quantity );
                 $order_item->set_total( $net_price * $quantity );
-                // Set taxes to 0 since net price is already VAT-included.
-                $order_item->set_subtotal_tax( 0 );
-                $order_item->set_total_tax( 0 );
                 $order_item->add_meta_data( '_nalda_gtin', $item['gtin'] );
                 $order_item->add_meta_data( '_nalda_customer_price', $item_price );
                 $order_item->add_meta_data( '_nalda_original_price', $item['price'] );
@@ -610,8 +605,8 @@ class WNS_Order_Import {
             $order->set_date_paid( null );
         }
 
-        // Calculate totals without recalculating taxes (prices are already VAT-included).
-        $order->calculate_totals( false );
+        // Calculate totals (this sets the order total correctly)
+        $order->calculate_totals();
 
         // Add order note
         $order->add_order_note(
