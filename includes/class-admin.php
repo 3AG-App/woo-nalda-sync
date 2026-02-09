@@ -629,7 +629,7 @@ class WNS_Admin {
             wp_nonce_field( 'wns_nalda_order_meta', 'wns_nalda_order_nonce' );
 
             // Available Nalda delivery statuses
-            $nalda_states = array(
+            $nalda_delivery_statuses = array(
                 ''                 => __( '— Select Delivery Status —', 'woo-nalda-sync' ),
                 'IN_PREPARATION'   => __( 'In Preparation', 'woo-nalda-sync' ),
                 'READY_TO_COLLECT' => __( 'Ready to Collect', 'woo-nalda-sync' ),
@@ -644,7 +644,7 @@ class WNS_Admin {
             <div class="wns-order-meta-row" style="flex-direction: column; gap: 4px;">
                 <label class="wns-order-meta-label" for="_nalda_delivery_status"><?php esc_html_e( 'Delivery Status', 'woo-nalda-sync' ); ?></label>
                 <select name="_nalda_delivery_status" id="_nalda_delivery_status" style="width: 100%;">
-                    <?php foreach ( $nalda_states as $value => $label ) : ?>
+                    <?php foreach ( $nalda_delivery_statuses as $value => $label ) : ?>
                         <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $nalda_delivery_status, $value ); ?>>
                             <?php echo esc_html( $label ); ?>
                         </option>
