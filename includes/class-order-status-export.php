@@ -193,8 +193,8 @@ class WNS_Order_Status_Export {
 
         $nalda_order_id = $order->get_meta( '_nalda_order_id' );
         
-        // Get the Nalda state directly from order meta (set in Delivery Information)
-        $nalda_status = $order->get_meta( '_nalda_state' );
+        // Get the Nalda delivery status directly from order meta (set during import)
+        $nalda_status = $order->get_meta( '_nalda_delivery_status' );
         
         // Skip orders without a Nalda state set
         if ( empty( $nalda_status ) ) {

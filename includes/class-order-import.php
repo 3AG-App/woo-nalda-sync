@@ -375,6 +375,24 @@ class WNS_Order_Import {
             $updated = true;
         }
 
+        // Store Nalda delivery status only if it's not set (site is source of truth)
+        $current_delivery_status = $order->get_meta( '_nalda_delivery_status' );
+        $new_delivery_status     = $info['deliveryStatus'] ?? '';
+
+        if ( empty( $current_delivery_status ) && ! empty( $new_delivery_status ) ) {
+            $order->update_meta_data( '_nalda_delivery_status', $new_delivery_status );
+            $updated = true;
+        }
+
+        // Update Nalda order state even if already set
+        $current_state = $order->get_meta( '_nalda_state' );
+        $new_state     = $info['state'] ?? '';
+
+        if ( ! empty( $new_state ) && $current_state !== $new_state ) {
+            $order->update_meta_data( '_nalda_state', $new_state );
+            $updated = true;
+        }
+
         // Try to re-link unlinked products
         $relinked_products = $this->relink_unlinked_products( $order );
         if ( $relinked_products > 0 ) {
@@ -564,9 +582,15 @@ class WNS_Order_Import {
         $order->update_meta_data( '_nalda_payout_status', $info['payoutStatus'] ?? '' );
         $order->update_meta_data( '_nalda_created_at', $info['createdAt'] ?? '' );
 
-        // Store delivery state for order status export
+        // Store delivery status for order status export
         $delivery_status = $info['deliveryStatus'] ?? 'IN_PREPARATION';
-        $order->update_meta_data( '_nalda_state', $delivery_status );
+        $order->update_meta_data( '_nalda_delivery_status', $delivery_status );
+
+        // Store Nalda order state (separate from delivery status). This should not be updated later.
+        $nalda_state = $info['state'] ?? '';
+        if ( ! empty( $nalda_state ) ) {
+            $order->update_meta_data( '_nalda_state', $nalda_state );
+        }
 
         // Store expected delivery date if available
         if ( ! empty( $info['deliveryDatePlanned'] ) ) {
