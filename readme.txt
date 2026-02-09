@@ -6,7 +6,7 @@ Tested up to: 6.7
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 8.5
-Stable tag: 1.0.22
+Stable tag: 1.0.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,6 +89,12 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 6. Detailed sync logs
 
 == Changelog ==
+
+= 1.0.23 =
+* Fixed: Use correct API field 'status' instead of 'deliveryStatus' for order import
+* Fixed: Normalize delivery status values to uppercase for consistency
+* Improved: Append end-customer name to buyer name in admin order list for Nalda orders
+* Improved: Renamed internal variables for clarity (_nalda_delivery_status)
 
 = 1.0.6 =
 * Fixed: Nalda billing address corrected (Grabenstrasse 15a, 6340 Baar)
