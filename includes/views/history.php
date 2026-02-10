@@ -29,10 +29,11 @@ if ( $license_valid ) {
     if ( ! empty( $license_key ) ) {
         // Build API URL
         $query_args = array(
-            'license_key' => $license_key,
-            'domain'      => $domain,
-            'page'        => $paged,
-            'per_page'    => $per_page,
+            'license_key'  => $license_key,
+            'product_slug' => WNS_PRODUCT_SLUG,
+            'domain'       => $domain,
+            'page'         => $paged,
+            'per_page'     => $per_page,
         );
 
         // Add type filter if set (API will support this parameter)
