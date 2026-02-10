@@ -50,9 +50,6 @@ class WSSC_Updater {
         
         // Schedule periodic update check
         add_action('wssc_update_check', [$this, 'scheduled_check']);
-        if (!wp_next_scheduled('wssc_update_check')) {
-            wp_schedule_event(time(), 'twicedaily', 'wssc_update_check');
-        }
     }
     
     /**
@@ -346,8 +343,17 @@ class WSSC_Updater {
     public function after_install($response, $hook_extra, $result) {
         global $wp_filesystem;
         
-        // Only handle our plugin
-        if (!isset($hook_extra['plugin']) || $hook_extra['plugin'] !== WSSC_PLUGIN_BASENAME) {
+        // Determine if this update is for our plugin.
+        // hook_extra['plugin'] is not always set (e.g. auto-updates, bulk updates).
+        $is_our_plugin = false;
+
+        if (isset($hook_extra['plugin']) && $hook_extra['plugin'] === WSSC_PLUGIN_BASENAME) {
+            $is_our_plugin = true;
+        } elseif (isset($result['destination_name']) && dirname(WSSC_PLUGIN_BASENAME) === $result['destination_name']) {
+            $is_our_plugin = true;
+        }
+
+        if (!$is_our_plugin) {
             return $response;
         }
         
@@ -370,8 +376,16 @@ class WSSC_Updater {
             $result['destination'] = $plugin_dir;
         }
         
-        // Reactivate plugin
+        // Reactivate plugin (note: this does NOT trigger register_activation_hook)
         activate_plugin(WSSC_PLUGIN_BASENAME);
+
+        // Manually reschedule crons since register_activation_hook won't fire.
+        if (!wp_next_scheduled('wssc_watchdog_check')) {
+            wp_schedule_event(time(), 'hourly', 'wssc_watchdog_check');
+        }
+        if (!wp_next_scheduled('wssc_license_check')) {
+            wp_schedule_event(time(), 'daily', 'wssc_license_check');
+        }
         
         return $response;
     }

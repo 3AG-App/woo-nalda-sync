@@ -3,7 +3,7 @@
  * Plugin Name: Woo Stock Sync from CSV
  * Plugin URI: https://3ag.app/products/woo-stock-sync-from-csv
  * Description: Automatically sync WooCommerce product stock from a CSV URL on a scheduled basis.
- * Version: 1.4.6
+ * Version: 1.4.7
  * Author: 3AG
  * Author URI: https://3ag.app
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('WSSC_VERSION', '1.4.6');
+define('WSSC_VERSION', '1.4.7');
 define('WSSC_PLUGIN_FILE', __FILE__);
 define('WSSC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WSSC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -110,6 +110,7 @@ final class Woo_Stock_Sync_From_CSV {
         register_deactivation_hook(__FILE__, [$this, 'deactivate']);
         
         add_action('plugins_loaded', [$this, 'init']);
+        add_action('plugins_loaded', [$this, 'ensure_crons_after_update'], 25);
         add_action('init', [$this, 'load_textdomain']);
     }
     
@@ -261,6 +262,53 @@ final class Woo_Stock_Sync_From_CSV {
         ];
     }
     
+    /**
+     * Ensure crons are scheduled after a plugin update
+     *
+     * WordPress update process: deactivate -> replace files -> reactivate.
+     * But activate_plugin() called from upgrader_post_install does NOT trigger
+     * register_activation_hook, so crons cleared during deactivation are never
+     * rescheduled. This method acts as a safety net on every page load.
+     */
+    public function ensure_crons_after_update() {
+        if (!class_exists('WooCommerce') || !$this->scheduler || !$this->license) {
+            return;
+        }
+
+        // Check if watchdog is missing — this is the canary.
+        // If watchdog is gone, it means crons were wiped (most likely by an update).
+        if (!wp_next_scheduled('wssc_watchdog_check')) {
+            wp_schedule_event(time(), 'hourly', 'wssc_watchdog_check');
+
+            // Reschedule sync if enabled
+            $enabled = get_option('wssc_enabled', false);
+            if ($enabled && !wp_next_scheduled('wssc_sync_event')) {
+                $interval = get_option('wssc_schedule_interval', 'hourly');
+                wp_schedule_event(time(), $interval, 'wssc_sync_event');
+            }
+
+            // Log the recovery
+            if ($this->logs) {
+                $this->logs->add([
+                    'type'    => 'watchdog',
+                    'trigger' => 'system',
+                    'status'  => 'warning',
+                    'message' => __('Cron recovery: Watchdog was missing (likely after plugin update). All crons rescheduled.', 'woo-stock-sync'),
+                ]);
+            }
+        }
+
+        // Also ensure license check cron exists
+        if (!wp_next_scheduled('wssc_license_check')) {
+            wp_schedule_event(time(), 'daily', 'wssc_license_check');
+        }
+
+        // Also ensure update check cron exists
+        if (!wp_next_scheduled('wssc_update_check')) {
+            wp_schedule_event(time(), 'twicedaily', 'wssc_update_check');
+        }
+    }
+
     /**
      * Deactivation
      */

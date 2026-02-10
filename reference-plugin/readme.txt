@@ -6,7 +6,7 @@ Tested up to: 6.4
 Requires PHP: 7.4
 WC requires at least: 5.0
 WC tested up to: 8.0
-Stable tag: 1.4.6
+Stable tag: 1.4.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,11 @@ Yes, the plugin supports both simple products and product variations. Each varia
 You can configure this in Settings. Options include: ignore (keep current stock), set stock to 0, or make the product private (and restore when it returns).
 
 == Changelog ==
+
+= 1.4.7 =
+* Fixed: Cron jobs not rescheduled after plugin auto-update (watchdog and sync stopped)
+* Fixed: after_install not detecting plugin during auto-updates/bulk updates
+* Added: Boot-time cron recovery on every page load as safety net
 
 = 1.1.3 =
 * Fixed: JavaScript error when viewing log details (duration.toFixed)
