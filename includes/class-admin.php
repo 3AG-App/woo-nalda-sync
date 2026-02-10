@@ -93,7 +93,7 @@ class WNS_Admin {
             $new_columns[ $key ] = $value;
             // Add after order_status column
             if ( 'order_status' === $key ) {
-                $new_columns['nalda_delivery_status'] = __( 'Nalda Status', 'woo-nalda-sync' );
+                $new_columns['nalda_delivery_status'] = __( 'Nalda Delivery Status', 'woo-nalda-sync' );
             }
         }
 
