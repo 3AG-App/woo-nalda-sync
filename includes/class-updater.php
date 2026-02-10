@@ -55,9 +55,6 @@ class WNS_Updater {
 
         // Schedule periodic update check
         add_action( 'wns_update_check', array( $this, 'scheduled_check' ) );
-        if ( ! wp_next_scheduled( 'wns_update_check' ) ) {
-            wp_schedule_event( time(), 'twicedaily', 'wns_update_check' );
-        }
     }
 
     /**
@@ -381,8 +378,17 @@ class WNS_Updater {
     public function after_install( $response, $hook_extra, $result ) {
         global $wp_filesystem;
 
-        // Only handle our plugin
-        if ( ! isset( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== WNS_PLUGIN_BASENAME ) {
+        // Determine if this update is for our plugin.
+        // hook_extra['plugin'] is not always set (e.g. auto-updates, bulk updates).
+        $is_our_plugin = false;
+
+        if ( isset( $hook_extra['plugin'] ) && $hook_extra['plugin'] === WNS_PLUGIN_BASENAME ) {
+            $is_our_plugin = true;
+        } elseif ( isset( $result['destination_name'] ) && dirname( WNS_PLUGIN_BASENAME ) === $result['destination_name'] ) {
+            $is_our_plugin = true;
+        }
+
+        if ( ! $is_our_plugin ) {
             return $response;
         }
 
@@ -405,8 +411,17 @@ class WNS_Updater {
             $result['destination'] = $plugin_dir;
         }
 
-        // Reactivate plugin
+        // Reactivate plugin (note: this does NOT trigger register_activation_hook)
         activate_plugin( WNS_PLUGIN_BASENAME );
+
+        // Manually reschedule crons since register_activation_hook won't fire.
+        // The watchdog is the most critical — ensure it exists.
+        if ( ! wp_next_scheduled( 'wns_watchdog_check' ) ) {
+            wp_schedule_event( time(), 'hourly', 'wns_watchdog_check' );
+        }
+        if ( ! wp_next_scheduled( 'wns_license_check' ) ) {
+            wp_schedule_event( time(), 'daily', 'wns_license_check' );
+        }
 
         return $response;
     }

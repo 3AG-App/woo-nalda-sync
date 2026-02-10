@@ -6,7 +6,7 @@ Tested up to: 6.7
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 8.5
-Stable tag: 1.0.29
+Stable tag: 1.0.30
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,6 +89,11 @@ The plugin exports: IN_PREPARATION, IN_DELIVERY, READY_TO_COLLECT, DELIVERED, CA
 6. Detailed sync logs
 
 == Changelog ==
+
+= 1.0.30 =
+* Fixed: Cron jobs not rescheduled after plugin auto-update (watchdog and all syncs stopped)
+* Fixed: after_install not detecting plugin during auto-updates/bulk updates
+* Added: Boot-time cron recovery on every page load as safety net
 
 = 1.0.24 =
 * Added: Nalda delivery status column on WooCommerce orders list page

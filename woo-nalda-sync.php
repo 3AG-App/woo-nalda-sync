@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Nalda Marketplace Sync
  * Plugin URI: https://3ag.app/products/woo-nalda-sync
  * Description: Sync WooCommerce products and orders with Nalda.com marketplace. Export products, import orders, and update order statuses.
- * Version: 1.0.29
+ * Version: 1.0.30
  * Author: 3AG
  * Author URI: https://3ag.app
  * Text Domain: woo-nalda-sync
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'WNS_VERSION', '1.0.29' );
+define( 'WNS_VERSION', '1.0.30' );
 define( 'WNS_PLUGIN_FILE', __FILE__ );
 define( 'WNS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WNS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -131,6 +131,9 @@ final class Woo_Nalda_Sync {
         // Initialize components
         add_action( 'plugins_loaded', array( $this, 'init_components' ), 20 );
 
+        // Ensure crons are scheduled after updates (runs after components are initialized)
+        add_action( 'plugins_loaded', array( $this, 'ensure_crons_after_update' ), 25 );
+
         // Load text domain
         add_action( 'init', array( $this, 'load_textdomain' ) );
     }
@@ -221,6 +224,51 @@ final class Woo_Nalda_Sync {
 
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Ensure crons are scheduled after a plugin update
+     *
+     * WordPress update process: deactivate -> replace files -> reactivate.
+     * But activate_plugin() called from upgrader_post_install does NOT trigger
+     * register_activation_hook, so crons cleared during deactivation are never
+     * rescheduled. This method acts as a safety net on every page load.
+     */
+    public function ensure_crons_after_update() {
+        if ( ! $this->check_woocommerce() || ! $this->scheduler || ! $this->license ) {
+            return;
+        }
+
+        // Check if watchdog is missing — this is the canary.
+        // If watchdog is gone, it means crons were wiped (most likely by an update).
+        if ( ! wp_next_scheduled( 'wns_watchdog_check' ) ) {
+            wp_schedule_event( time(), 'hourly', 'wns_watchdog_check' );
+
+            // Also reschedule all enabled sync crons
+            $this->scheduler->reschedule_all();
+
+            // Log the recovery
+            if ( $this->logs ) {
+                $this->logs->add(
+                    array(
+                        'type'    => 'watchdog',
+                        'trigger' => 'system',
+                        'status'  => 'warning',
+                        'message' => __( 'Cron recovery: Watchdog was missing (likely after plugin update). All crons rescheduled.', 'woo-nalda-sync' ),
+                    )
+                );
+            }
+        }
+
+        // Also ensure license check cron exists
+        if ( ! wp_next_scheduled( 'wns_license_check' ) ) {
+            wp_schedule_event( time(), 'daily', 'wns_license_check' );
+        }
+
+        // Also ensure update check cron exists
+        if ( ! wp_next_scheduled( 'wns_update_check' ) ) {
+            wp_schedule_event( time(), 'twicedaily', 'wns_update_check' );
+        }
     }
 
     /**
