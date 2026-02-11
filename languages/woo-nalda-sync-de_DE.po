@@ -773,6 +773,10 @@ msgid "Buyer"
 msgstr "Käufer"
 
 #: includes/class-delivery-note-pdf.php
+msgid "Article No."
+msgstr "Artikel-Nr."
+
+#: includes/class-delivery-note-pdf.php
 msgid "Description"
 msgstr "Beschreibung"
 

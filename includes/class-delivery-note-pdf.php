@@ -258,6 +258,10 @@ class WNS_Delivery_Note_PDF {
         foreach ( $order->get_items() as $item ) {
             $quantity = $item->get_quantity();
             
+            // Get article number (SKU).
+            $product = $item->get_product();
+            $sku = $product ? $product->get_sku() : '';
+            
             // Use the customer price from Nalda (what the end client paid).
             $customer_price = $item->get_meta( '_nalda_customer_price' );
             if ( $customer_price ) {
@@ -272,6 +276,7 @@ class WNS_Delivery_Note_PDF {
             
             $items_html .= '<tr>
                 <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . $row_num . '</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">' . esc_html( $sku ) . '</td>
                 <td style="border: 1px solid #ddd; padding: 8px;">' . esc_html( $item->get_name() ) . '</td>
                 <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . $quantity . '</td>
                 <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">' . wc_price( $unit_price, array( 'currency' => $order->get_currency() ) ) . '</td>
@@ -365,6 +370,7 @@ class WNS_Delivery_Note_PDF {
                 <thead>
                     <tr>
                         <th style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px 8px; text-align: center; width: 40px;">' . esc_html__( 'No', 'woo-nalda-sync' ) . '</th>
+                        <th style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px 8px; text-align: left; width: 100px;">' . esc_html__( 'Article No.', 'woo-nalda-sync' ) . '</th>
                         <th style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px 8px; text-align: left;">' . esc_html__( 'Description', 'woo-nalda-sync' ) . '</th>
                         <th style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px 8px; text-align: center; width: 60px;">' . esc_html__( 'Quantity', 'woo-nalda-sync' ) . '</th>
                         <th style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px 8px; text-align: right; width: 90px;">' . esc_html__( 'Unit price', 'woo-nalda-sync' ) . '</th>
