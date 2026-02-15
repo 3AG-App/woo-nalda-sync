@@ -50,6 +50,9 @@ class WNS_Order_Import {
         add_filter( 'woocommerce_email_recipient_customer_partially_refunded_order', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
         add_filter( 'woocommerce_email_recipient_customer_new_account', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
         add_filter( 'woocommerce_email_recipient_customer_reset_password', array( $this, 'disable_customer_emails_for_nalda_orders' ), 10, 2 );
+
+        // Add Nalda order details to admin emails
+        add_action( 'woocommerce_email_after_order_table', array( $this, 'add_nalda_details_to_email' ), 10, 4 );
     }
 
     /**
@@ -742,6 +745,207 @@ class WNS_Order_Import {
         }
 
         return null;
+    }
+
+    /**
+     * Add Nalda order details to admin email
+     *
+     * Displays additional information like total amount, commission,
+     * shipping info, and payout status in admin new order emails.
+     *
+     * @param WC_Order $order         Order object.
+     * @param bool     $sent_to_admin Whether this is an admin email.
+     * @param bool     $plain_text    Whether this is plain text email.
+     * @param WC_Email $email         Email object.
+     */
+    public function add_nalda_details_to_email( $order, $sent_to_admin, $plain_text, $email = null ) {
+        // Only add to admin emails for Nalda orders
+        if ( ! $sent_to_admin ) {
+            return;
+        }
+
+        $nalda_order_id = $order->get_meta( '_nalda_order_id' );
+        if ( empty( $nalda_order_id ) ) {
+            return;
+        }
+
+        $currency          = $order->get_currency();
+        $original_total    = $order->get_meta( '_nalda_original_total' );
+        $total_commission   = $order->get_meta( '_nalda_total_commission' );
+        $payout_status     = $order->get_meta( '_nalda_payout_status' );
+        $delivery_status   = $order->get_meta( '_nalda_delivery_status' );
+        $delivery_date     = $order->get_meta( '_nalda_expected_delivery_date' );
+        $end_customer_email = $order->get_meta( '_nalda_end_customer_email' );
+
+        // Shipping address
+        $shipping_name    = trim( $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name() );
+        $shipping_address = $order->get_shipping_address_1();
+        $shipping_city    = $order->get_shipping_city();
+        $shipping_postcode = $order->get_shipping_postcode();
+        $shipping_country = $order->get_shipping_country();
+
+        if ( $plain_text ) {
+            $this->render_nalda_email_details_plain( array(
+                'nalda_order_id'     => $nalda_order_id,
+                'currency'           => $currency,
+                'original_total'     => $original_total,
+                'total_commission'   => $total_commission,
+                'order_total'        => $order->get_total(),
+                'payout_status'      => $payout_status,
+                'delivery_status'    => $delivery_status,
+                'delivery_date'      => $delivery_date,
+                'end_customer_email' => $end_customer_email,
+                'shipping_name'      => $shipping_name,
+                'shipping_address'   => $shipping_address,
+                'shipping_city'      => $shipping_city,
+                'shipping_postcode'  => $shipping_postcode,
+                'shipping_country'   => $shipping_country,
+            ) );
+        } else {
+            $this->render_nalda_email_details_html( array(
+                'nalda_order_id'     => $nalda_order_id,
+                'currency'           => $currency,
+                'original_total'     => $original_total,
+                'total_commission'   => $total_commission,
+                'order_total'        => $order->get_total(),
+                'payout_status'      => $payout_status,
+                'delivery_status'    => $delivery_status,
+                'delivery_date'      => $delivery_date,
+                'end_customer_email' => $end_customer_email,
+                'shipping_name'      => $shipping_name,
+                'shipping_address'   => $shipping_address,
+                'shipping_city'      => $shipping_city,
+                'shipping_postcode'  => $shipping_postcode,
+                'shipping_country'   => $shipping_country,
+            ) );
+        }
+    }
+
+    /**
+     * Render Nalda details in HTML email format
+     *
+     * @param array $data Email data.
+     */
+    private function render_nalda_email_details_html( $data ) {
+        $currency = $data['currency'];
+        ?>
+        <h2 style="margin-top: 20px;"><?php esc_html_e( 'Nalda Marketplace Details', 'woo-nalda-sync' ); ?></h2>
+        <table cellspacing="0" cellpadding="6" border="1" style="width: 100%; border: 1px solid #e5e5e5; border-collapse: collapse; margin-bottom: 20px;">
+            <tbody>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Nalda Order ID', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( $data['nalda_order_id'] ); ?></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Customer Total (incl. commission)', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( number_format( floatval( $data['original_total'] ), 2 ) . ' ' . $currency ); ?></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Nalda Commission', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( number_format( floatval( $data['total_commission'] ), 2 ) . ' ' . $currency ); ?></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Net Amount (your payout)', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><strong><?php echo esc_html( number_format( floatval( $data['order_total'] ), 2 ) . ' ' . $currency ); ?></strong></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Payout Status', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( $data['payout_status'] ?: __( 'Pending', 'woo-nalda-sync' ) ); ?></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Delivery Status', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( $data['delivery_status'] ?: __( 'N/A', 'woo-nalda-sync' ) ); ?></td>
+                </tr>
+                <?php if ( ! empty( $data['delivery_date'] ) ) : ?>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Expected Delivery', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $data['delivery_date'] ) ) ); ?></td>
+                </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
+        <h2><?php esc_html_e( 'Ship To (End Customer)', 'woo-nalda-sync' ); ?></h2>
+        <table cellspacing="0" cellpadding="6" border="1" style="width: 100%; border: 1px solid #e5e5e5; border-collapse: collapse; margin-bottom: 20px;">
+            <tbody>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Name', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( $data['shipping_name'] ); ?></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Address', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( $data['shipping_address'] ); ?></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'City / Postcode', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( $data['shipping_postcode'] . ' ' . $data['shipping_city'] ); ?></td>
+                </tr>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Country', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( WC()->countries->countries[ $data['shipping_country'] ] ?? $data['shipping_country'] ); ?></td>
+                </tr>
+                <?php if ( ! empty( $data['end_customer_email'] ) ) : ?>
+                <tr>
+                    <th scope="row" style="text-align: left; padding: 12px; background-color: #f8f8f8; border: 1px solid #e5e5e5;"><?php esc_html_e( 'Customer Email', 'woo-nalda-sync' ); ?></th>
+                    <td style="padding: 12px; border: 1px solid #e5e5e5;"><?php echo esc_html( $data['end_customer_email'] ); ?></td>
+                </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+        <?php
+    }
+
+    /**
+     * Render Nalda details in plain text email format
+     *
+     * @param array $data Email data.
+     */
+    private function render_nalda_email_details_plain( $data ) {
+        $currency = $data['currency'];
+
+        echo "\n";
+        echo "==========\n";
+        echo esc_html__( 'NALDA MARKETPLACE DETAILS', 'woo-nalda-sync' ) . "\n";
+        echo "==========\n\n";
+
+        /* translators: %s: Nalda order ID */
+        printf( esc_html__( 'Nalda Order ID: %s', 'woo-nalda-sync' ) . "\n", esc_html( $data['nalda_order_id'] ) );
+        /* translators: %s: Amount with currency */
+        printf( esc_html__( 'Customer Total (incl. commission): %s', 'woo-nalda-sync' ) . "\n", esc_html( number_format( floatval( $data['original_total'] ), 2 ) . ' ' . $currency ) );
+        /* translators: %s: Amount with currency */
+        printf( esc_html__( 'Nalda Commission: %s', 'woo-nalda-sync' ) . "\n", esc_html( number_format( floatval( $data['total_commission'] ), 2 ) . ' ' . $currency ) );
+        /* translators: %s: Amount with currency */
+        printf( esc_html__( 'Net Amount (your payout): %s', 'woo-nalda-sync' ) . "\n", esc_html( number_format( floatval( $data['order_total'] ), 2 ) . ' ' . $currency ) );
+        /* translators: %s: Payout status */
+        printf( esc_html__( 'Payout Status: %s', 'woo-nalda-sync' ) . "\n", esc_html( $data['payout_status'] ?: __( 'Pending', 'woo-nalda-sync' ) ) );
+        /* translators: %s: Delivery status */
+        printf( esc_html__( 'Delivery Status: %s', 'woo-nalda-sync' ) . "\n", esc_html( $data['delivery_status'] ?: __( 'N/A', 'woo-nalda-sync' ) ) );
+
+        if ( ! empty( $data['delivery_date'] ) ) {
+            /* translators: %s: Delivery date */
+            printf( esc_html__( 'Expected Delivery: %s', 'woo-nalda-sync' ) . "\n", esc_html( date_i18n( get_option( 'date_format' ), strtotime( $data['delivery_date'] ) ) ) );
+        }
+
+        echo "\n";
+        echo "----------\n";
+        echo esc_html__( 'SHIP TO (END CUSTOMER)', 'woo-nalda-sync' ) . "\n";
+        echo "----------\n\n";
+
+        /* translators: %s: Customer name */
+        printf( esc_html__( 'Name: %s', 'woo-nalda-sync' ) . "\n", esc_html( $data['shipping_name'] ) );
+        /* translators: %s: Street address */
+        printf( esc_html__( 'Address: %s', 'woo-nalda-sync' ) . "\n", esc_html( $data['shipping_address'] ) );
+        /* translators: %s: City with postcode */
+        printf( esc_html__( 'City / Postcode: %s', 'woo-nalda-sync' ) . "\n", esc_html( $data['shipping_postcode'] . ' ' . $data['shipping_city'] ) );
+        /* translators: %s: Country name */
+        printf( esc_html__( 'Country: %s', 'woo-nalda-sync' ) . "\n", esc_html( WC()->countries->countries[ $data['shipping_country'] ] ?? $data['shipping_country'] ) );
+
+        if ( ! empty( $data['end_customer_email'] ) ) {
+            /* translators: %s: Customer email */
+            printf( esc_html__( 'Customer Email: %s', 'woo-nalda-sync' ) . "\n", esc_html( $data['end_customer_email'] ) );
+        }
+
+        echo "\n";
     }
 
     /**
