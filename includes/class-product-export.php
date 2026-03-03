@@ -327,7 +327,7 @@ class WNS_Product_Export {
         // Get price and tax
         $price_incl_tax = wc_get_price_including_tax( $product );
         $price_excl_tax = wc_get_price_excluding_tax( $product );
-        $tax            = $price_incl_tax - $price_excl_tax;
+        $tax_rate       = $this->get_nalda_tax_rate( $product, $price_incl_tax, $price_excl_tax );
 
         return array(
             $this->get_product_gtin( $product ),                                  // gtin
@@ -335,7 +335,7 @@ class WNS_Product_Export {
             $default_country,                                                      // country
             $product->get_meta( '_condition' ) ?: 'new',                          // condition
             number_format( $price_incl_tax, 2, '.', '' ),                         // price
-            number_format( $tax, 2, '.', '' ),                                    // tax
+            $tax_rate,                                                             // tax
             $default_currency,                                                     // currency
             $default_delivery_days,                                                // delivery_time_days
             $product->get_stock_quantity() ?: 0,                                  // stock
@@ -456,6 +456,52 @@ class WNS_Product_Export {
     private function get_attribute( $product, $attribute_name ) {
         $attribute = $product->get_attribute( $attribute_name );
         return ! empty( $attribute ) ? $attribute : '';
+    }
+
+    /**
+     * Get Nalda-compatible tax rate (VAT percent)
+     *
+     * Nalda accepts only Swiss VAT rates: 8.1 (standard) or 2.6 (reduced).
+     *
+     * @param WC_Product $product Product object.
+     * @param float      $price_incl_tax Price including tax.
+     * @param float      $price_excl_tax Price excluding tax.
+     * @return string
+     */
+    private function get_nalda_tax_rate( $product, $price_incl_tax, $price_excl_tax ) {
+        $rate = 0.0;
+
+        // Preferred source: WooCommerce tax table for this product's tax class.
+        $tax_class = $product->get_tax_class();
+        $tax_rates = WC_Tax::get_rates( $tax_class );
+
+        if ( ! empty( $tax_rates ) ) {
+            $first_rate = reset( $tax_rates );
+            if ( isset( $first_rate['rate'] ) ) {
+                $rate = (float) $first_rate['rate'];
+            }
+        }
+
+        // Fallback: derive percentage from incl/excl prices.
+        if ( $rate <= 0 && $price_excl_tax > 0 ) {
+            $rate = ( ( $price_incl_tax - $price_excl_tax ) / $price_excl_tax ) * 100;
+        }
+
+        // Nalda requires only 8.1 or 2.6. Normalize to the closest accepted value.
+        $allowed_rates = array( 8.1, 2.6 );
+
+        if ( $rate <= 0 ) {
+            $normalized_rate = 8.1;
+        } else {
+            $normalized_rate = $allowed_rates[0];
+            foreach ( $allowed_rates as $allowed_rate ) {
+                if ( abs( $rate - $allowed_rate ) < abs( $rate - $normalized_rate ) ) {
+                    $normalized_rate = $allowed_rate;
+                }
+            }
+        }
+
+        return number_format( $normalized_rate, 1, '.', '' );
     }
 
     /**
